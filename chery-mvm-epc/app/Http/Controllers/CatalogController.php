@@ -178,146 +178,164 @@ class CatalogController extends Controller
     /**
      * صفحه دسته‌بندی و زیردسته‌های قطعات
      */
-    public function category(Request $request)
-    {
-        $category = trim((string) $request->query('category', ''));
-        $subcategory = trim((string) $request->query('subcategory', ''));
-        $q = trim((string) $request->query('q', ''));
 
-        // پشتیبانی از انتخاب چند خودرو
-        $selectedVehicles = $this->selectedVehicleNames($request);
+public function category(Request $request)
+{
+    $category = trim((string) $request->query('category', ''));
+    $subcategory = trim((string) $request->query('subcategory', ''));
+    $q = trim((string) $request->query('q', ''));
 
-        // سازگاری با قالب‌های قدیمی
-        $vehicle = count($selectedVehicles) === 1
-            ? $selectedVehicles[0]
-            : '';
+    // پشتیبانی از انتخاب چند خودرو
+    $selectedVehicles = $this->selectedVehicleNames($request);
 
-        $partsQuery = Part::query()
-            ->when($category !== '', function ($query) use ($category) {
-                $query->where('category', $category);
-            })
-            ->when($subcategory !== '', function ($query) use ($subcategory) {
-                $query->where('subcategory', $subcategory);
-            })
-            ->when(!empty($selectedVehicles), function ($query) use ($selectedVehicles) {
-                $query->whereHas('vehicleModels', function ($sub) use ($selectedVehicles) {
-                    $sub->whereIn('vehicle_models.name', $selectedVehicles);
+    // سازگاری با قالب‌های قدیمی
+    $vehicle = count($selectedVehicles) === 1
+        ? $selectedVehicles[0]
+        : '';
+
+    // ساخت کوئری قطعات
+    $partsQuery = Part::query()
+        ->when($category !== '', function ($query) use ($category) {
+            $query->where('category', $category);
+        })
+        ->when($subcategory !== '', function ($query) use ($subcategory) {
+            $query->where('subcategory', $subcategory);
+        })
+        ->when(!empty($selectedVehicles), function ($query) use ($selectedVehicles) {
+            $query->whereHas('vehicleModels', function ($sub) use ($selectedVehicles) {
+                $sub->whereIn('vehicle_models.name', $selectedVehicles);
+            });
+        });
+
+    // جست‌وجوی عبارت‌های چندکلمه‌ای
+    if ($q !== '') {
+        $words = preg_split('/\s+/u', $q, -1, PREG_SPLIT_NO_EMPTY);
+
+        $partsQuery->where(function ($sub) use ($words) {
+            foreach ($words as $word) {
+                $sub->where(function ($inner) use ($word) {
+                    $inner->where('technical_code', 'like', "%{$word}%")
+                        ->orWhere('logistics_code', 'like', "%{$word}%")
+                        ->orWhere('name_fa', 'like', "%{$word}%");
                 });
-            });
-
-        // جست‌وجوی عبارت‌های چندکلمه‌ای
-        if ($q !== '') {
-            $words = preg_split('/\s+/u', $q, -1, PREG_SPLIT_NO_EMPTY);
-
-            $partsQuery->where(function ($sub) use ($words) {
-                foreach ($words as $word) {
-                    $sub->where(function ($inner) use ($word) {
-                        $inner->where('technical_code', 'like', "%{$word}%")
-                            ->orWhere('logistics_code', 'like', "%{$word}%")
-                            ->orWhere('name_fa', 'like', "%{$word}%");
-                    });
-                }
-            });
-        }
-
-        $parts = $partsQuery
-            ->orderBy('name_fa')
-            ->paginate(30)
-            ->withQueryString();
-
-        // فهرست دسته‌های اصلی
-        $categories = DB::table('parts')
-            ->whereNotNull('category')
-            ->where('category', '<>', '')
-            ->distinct()
-            ->orderBy('category')
-            ->pluck('category');
-
-        // فهرست زیردسته‌های دسته انتخاب‌شده
-        $subcategories = collect();
-
-        if ($category !== '') {
-            $subcategories = DB::table('parts')
-                ->where('category', $category)
-                ->whereNotNull('subcategory')
-                ->where('subcategory', '<>', '')
-                ->distinct()
-                ->orderBy('subcategory')
-                ->pluck('subcategory');
-        }
-
-        // فهرست مدل‌های خودرو
-        $vehicles = VehicleModel::query()
-            ->orderBy('name')
-            ->pluck('name');
-
-        // اطلاعات قطعه انتخاب‌شده در مدل سه‌بعدی
-        $modelPartId = trim(
-            (string) $request->query('model_part_id', '')
-        );
-
-        $modelPartMappings = [
-            '819' => [
-                'q' => 'درب عقب سمت راست',
-                'category' => '',
-                'subcategory' => '',
-            ],
-        ];
-
-        $selectedModelPart = $modelPartMappings[$modelPartId] ?? null;
-
-        return view('catalog.category', compact(
-            'parts',
-            'category',
-            'subcategory',
-            'vehicle',
-            'selectedVehicles',
-            'q',
-            'categories',
-            'subcategories',
-            'vehicles',
-            'modelPartId',
-            'selectedModelPart'
-        ));
+            }
+        });
     }
+
+    // دریافت قطعات همراه با فروشندگان فعال و تأییدشده
+  $parts = $partsQuery
+    ->with('activeSellerProducts.store')
+    ->orderBy('name_fa')
+    ->paginate(30)
+    ->withQueryString();
+
+    // فهرست دسته‌های اصلی
+    $categories = DB::table('parts')
+        ->whereNotNull('category')
+        ->where('category', '<>', '')
+        ->distinct()
+        ->orderBy('category')
+        ->pluck('category');
+
+    // فهرست زیردسته‌های دسته انتخاب‌شده
+    $subcategories = collect();
+
+    if ($category !== '') {
+        $subcategories = DB::table('parts')
+            ->where('category', $category)
+            ->whereNotNull('subcategory')
+            ->where('subcategory', '<>', '')
+            ->distinct()
+            ->orderBy('subcategory')
+            ->pluck('subcategory');
+    }
+
+    // فهرست مدل‌های خودرو
+    $vehicles = VehicleModel::query()
+        ->orderBy('name')
+        ->pluck('name');
+
+    // اطلاعات قطعه انتخاب‌شده در مدل سه‌بعدی
+    $modelPartId = trim(
+        (string) $request->query('model_part_id', '')
+    );
+
+    $modelPartMappings = [
+        '819' => [
+            'q' => 'درب عقب سمت راست',
+            'category' => '',
+            'subcategory' => '',
+        ],
+    ];
+
+    $selectedModelPart = $modelPartMappings[$modelPartId] ?? null;
+
+    // ارسال اطلاعات به صفحه
+    return view('catalog.category', compact(
+        'parts',
+        'category',
+        'subcategory',
+        'vehicle',
+        'selectedVehicles',
+        'q',
+        'categories',
+        'subcategories',
+        'vehicles',
+        'modelPartId',
+        'selectedModelPart'
+    ));
+}
+
 
     /**
      * صفحه جزئیات یک قطعه
      */
-    public function show(string $id)
-    {
-        $part = Part::findOrFail($id);
+   public function show(string $id)
+{
+    $part = Part::findOrFail($id);
 
-        $vehicleModels = $part->vehicleModels()
-            ->orderBy('name')
+    $vehicleModels = $part->vehicleModels()
+        ->orderBy('name')
+        ->get();
+
+    $replacementCodes = preg_split(
+        '/[,،;؛\r\n]+/u',
+        (string) ($part->replace_raw ?? '')
+    );
+
+    $replacementCodes = array_values(array_unique(array_filter(
+        array_map('trim', $replacementCodes)
+    )));
+
+    $replacementParts = collect();
+
+    if (!empty($replacementCodes)) {
+        $replacementParts = Part::query()
+            ->where(function ($query) use ($replacementCodes) {
+                $query->whereIn('technical_code', $replacementCodes)
+                    ->orWhereIn('logistics_code', $replacementCodes);
+            })
+            ->limit(100)
             ->get();
-
-        $replacementCodes = preg_split(
-            '/[,،;؛\r\n]+/u',
-            (string) ($part->replace_raw ?? '')
-        );
-
-        $replacementCodes = array_values(array_unique(array_filter(
-            array_map('trim', $replacementCodes)
-        )));
-
-        $replacementParts = collect();
-
-        if (!empty($replacementCodes)) {
-            $replacementParts = Part::query()
-                ->where(function ($query) use ($replacementCodes) {
-                    $query->whereIn('technical_code', $replacementCodes)
-                        ->orWhereIn('logistics_code', $replacementCodes);
-                })
-                ->limit(100)
-                ->get();
-        }
-
-        return view('catalog.show', compact(
-            'part',
-            'vehicleModels',
-            'replacementCodes',
-            'replacementParts'
-        ));
     }
+
+    // پیشنهادهای فروشگاه‌های تأییدشده
+    $sellerOffers = \App\Models\SellerProduct::query()
+        ->with('store')
+        ->where('part_id', $part->id)
+        ->where('is_active', true)
+        ->whereHas('store', function ($query) {
+            $query->where('status', 'approved');
+        })
+        ->latest()
+        ->get();
+
+    return view('catalog.show', compact(
+        'part',
+        'vehicleModels',
+        'replacementCodes',
+        'replacementParts',
+        'sellerOffers'
+    ));
+}
 }

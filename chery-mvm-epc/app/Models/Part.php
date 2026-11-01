@@ -26,4 +26,12 @@ class Part extends Model
             $query->where('status', 'approved');
         });
 }
+
+public function store()
+{
+    return $this->belongsTo(
+        \App\Models\SellerStore::class,
+        'seller_store_id'
+    );
+}
 }

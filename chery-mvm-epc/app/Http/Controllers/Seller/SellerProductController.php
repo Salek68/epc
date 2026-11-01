@@ -247,13 +247,39 @@ class SellerProductController extends Controller
     /**
      * ثبت کلیک مشتری و انتقال به سایت فروشنده
      */
-    public function visit(SellerProduct $product)
-    {
-        abort_unless($product->is_active, 404);
-        abort_unless($product->store && $product->store->isApproved(), 404);
+  public function visit($id)
+{
+    $product = \App\Models\SellerProduct::query()
+        ->with('store')
+        ->where('id', $id)
+        ->where('is_active', true)
+        ->whereHas('store', function ($query) {
+            $query->where('status', 'approved');
+        })
+        ->firstOrFail();
 
-        $product->incrementClicks();
+    // بررسی معتبر بودن لینک فروشنده
+    $url = $product->product_url;
 
-        return redirect()->away($product->product_url);
+    if (
+        !filter_var($url, FILTER_VALIDATE_URL) ||
+        !in_array(parse_url($url, PHP_URL_SCHEME), ['http', 'https'])
+    ) {
+        abort(404, 'لینک محصول معتبر نیست.');
     }
+
+    // ثبت تعداد کلیک
+    $product->increment('click_count');
+
+    // ثبت اطلاعات کلیک در جدول تاریخچه
+    \App\Models\SellerProductClick::create([
+        'seller_product_id' => $product->id,
+        'clicked_at' => now(),
+        'ip_address' => request()->ip(),
+        'user_agent' => request()->userAgent(),
+    ]);
+
+    // انتقال مشتری به سایت فروشنده
+    return redirect()->away($url);
+}
 }

@@ -23,13 +23,13 @@ class SellerProduct extends Model
     ];
 
     // فروشگاهی که این محصول را ثبت کرده
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(
-            SellerStore::class,
-            'seller_store_id'
-        );
-    }
+  public function store()
+{
+    return $this->belongsTo(
+        \App\Models\SellerStore::class,
+        'seller_store_id'
+    );
+}
 
     // اطلاعات اصلی قطعه
     public function part(): BelongsTo

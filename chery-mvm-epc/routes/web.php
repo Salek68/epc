@@ -11,19 +11,26 @@ use Illuminate\Support\Facades\Route;
 // ==========================================
 // EPC - کاتالوگ قطعات
 // ==========================================
+// ==========================================
+// EPC - کاتالوگ قطعات (فقط کاربران لاگین‌شده)
+// ==========================================
 
-Route::get('/', [CatalogController::class, 'index'])
-    ->name('catalog.index');
+Route::middleware('auth')->group(function () {
 
-Route::get('/catalog/category', [CatalogController::class, 'category'])
-    ->name('catalog.category');
+    Route::get('/', [CatalogController::class, 'index'])
+        ->name('catalog.index');
 
-Route::get('/catalog/part/{id}', [CatalogController::class, 'show'])
-    ->whereNumber('id')
-    ->name('catalog.show');
+    Route::get('/catalog/category', [CatalogController::class, 'category'])
+        ->name('catalog.category');
 
-Route::get('/epc/tiggo-7-pro', [CatalogController::class, 'explorer'])
-    ->name('catalog.explorer');
+    Route::get('/catalog/part/{id}', [CatalogController::class, 'show'])
+        ->whereNumber('id')
+        ->name('catalog.show');
+
+    Route::get('/epc/tiggo-7-pro', [CatalogController::class, 'explorer'])
+        ->name('catalog.explorer');
+
+});
 
 
 // ==========================================

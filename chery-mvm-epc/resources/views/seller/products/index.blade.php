@@ -4,21 +4,33 @@
 @section('content')
 <div class="container mx-auto px-4 py-8" dir="rtl">
 
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">
-                محصولات فروشگاه من
-            </h1>
-            <p class="mt-2 text-gray-500">
-                مدیریت لینک‌ها و تصاویر محصولات ثبت‌شده
-            </p>
-        </div>
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800">
+            محصولات فروشگاه من
+        </h1>
 
+        <p class="mt-2 text-gray-500">
+            مدیریت لینک‌ها و تصاویر محصولات ثبت‌شده
+        </p>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+
+        {{-- ورود به بانک لنت --}}
+        <a href="{{ route('seller.brake-bank.index') }}"
+           class="rounded-lg bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700">
+            🛞 بانک لنت و فروش لنت
+        </a>
+
+        {{-- ثبت محصول عادی --}}
         <a href="{{ route('seller.products.catalog') }}"
-            class="rounded-lg bg-blue-600 px-5 py-3 text-white">
+           class="rounded-lg bg-blue-600 px-5 py-3 text-white transition hover:bg-blue-700">
             + ثبت محصول جدید
         </a>
+
     </div>
+</div>
 
     @if(session('success'))
         <div class="mb-5 rounded-lg bg-green-50 p-4 text-green-700">

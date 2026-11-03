@@ -19,7 +19,13 @@ class BrakePad extends Model
         'carton_quantity' => 'integer',
         'source_row' => 'integer',
     ];
-
+public function sellerOffers()
+{
+    return $this->hasMany(
+        BrakeBankSellerOffer::class,
+        'brake_pad_id'
+    );
+}
     public function vehicles(): BelongsToMany
     {
         return $this->belongsToMany(

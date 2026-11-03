@@ -1,19 +1,33 @@
+
 <div class="card" style="border:1px solid #e2e8f0;box-shadow:none;">
+
+    @php
+        // پیشنهادهای فروش تأییدشده دارای عکس
+        $sellerImageOffer = $pad->sellerOffers
+            ->where('status', 'approved')
+            ->first(function ($offer) {
+                return !empty($offer->image_url);
+            });
+
+        // اولویت: عکس فروشنده، سپس عکس اصلی بانک، سپس اولین عکس بانک
+        $primaryImage = $pad->images
+            ->firstWhere('is_primary', true)
+            ?? $pad->images->first();
+
+        $displayImage = $sellerImageOffer?->image_url
+            ?: ($primaryImage
+                ? asset('storage/' . $primaryImage->image_path)
+                : null);
+    @endphp
 
     <div class="product-showcase">
 
         {{-- تصاویر --}}
         <div>
-            @php
-                $primaryImage = $pad->images
-                    ->firstWhere('is_primary', true)
-                    ?? $pad->images->first();
-            @endphp
-
             <div class="product-showcase-image">
-                @if($primaryImage)
+                @if($displayImage)
                     <img
-                        src="{{ asset('storage/' . $primaryImage->image_path) }}"
+                        src="{{ $displayImage }}"
                         alt="{{ $pad->name }}"
                         loading="lazy"
                     >
@@ -25,7 +39,8 @@
                 @endif
             </div>
 
-            @if($pad->images->count() > 1)
+            {{-- تصاویر گالری بانک لنت --}}
+            @if(!$sellerImageOffer && $pad->images->count() > 1)
                 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
                     @foreach($pad->images as $image)
                         <a
@@ -41,6 +56,12 @@
                         </a>
                     @endforeach
                 </div>
+            @endif
+
+            @if($sellerImageOffer)
+                <small style="display:block;margin-top:8px;color:#64748b;">
+                    تصویر ثبت‌شده توسط فروشنده
+                </small>
             @endif
         </div>
 
@@ -127,5 +148,11 @@
             </div>
         </div>
     @endif
+
+    {{-- تعداد فروشندگان تأییدشده --}}
+    <div class="seller-count">
+        {{ $pad->sellerOffers->where('status', 'approved')->count() }}
+        فروشنده برای این لنت
+    </div>
 
 </div>

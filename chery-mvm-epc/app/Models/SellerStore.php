@@ -24,7 +24,13 @@ class SellerStore extends Model
         'submitted_at' => 'datetime',
         'approved_at' => 'datetime',
     ];
-
+public function brakeBankOffers()
+{
+    return $this->hasMany(
+        BrakeBankSellerOffer::class,
+        'seller_store_id'
+    );
+}
     // کاربری که مالک فروشگاه است
     public function user(): BelongsTo
     {

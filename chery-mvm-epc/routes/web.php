@@ -152,3 +152,27 @@ Route::prefix('brake-bank')
         Route::get('/pad/{pad}', [BrakeBankController::class, 'show'])
             ->name('pad.show');
     });
+
+    use App\Http\Controllers\Seller\BrakeBankSellerController;
+
+Route::prefix('seller')
+    ->name('seller.')
+    ->middleware('auth')
+    ->group(function () {
+
+        Route::get('/brake-bank', [
+            BrakeBankSellerController::class,
+            'index'
+        ])->name('brake-bank.index');
+
+        Route::post('/brake-bank/{brakePad}', [
+            BrakeBankSellerController::class,
+            'store'
+        ])->name('brake-bank.store');
+
+        Route::get('/brake-bank/offers', [
+            BrakeBankSellerController::class,
+            'offers'
+        ])->name('brake-bank.offers');
+
+    });

@@ -19,34 +19,34 @@
         مشخصات فنی، قیمت فعلی و خودروهای سازگار با این لنت
     </p>
 </section>
+@php
+    $sellerOffers = $pad->sellerOffers;
+    $sellerCount = $sellerOffers->count();
 
+    // اولین عکس ثبت‌شده توسط فروشندگان
+    $sellerImage = $sellerOffers->first(
+        fn ($offer) => !empty($offer->image_url)
+    )?->image_url;
+
+    // اگر فروشنده عکسی نداشت، عکس بانک نمایش داده شود
+    $fallbackImage = $pad->images->first()?->image_path;
+
+    $displayImage = $sellerImage
+        ?: ($fallbackImage ? asset('storage/' . $fallbackImage) : null);
+@endphp
 <div class="card">
     <h2>گالری تصاویر لنت</h2>
 
-    @if($pad->images->isNotEmpty())
-
-        <div class="grid-2">
-            @foreach($pad->images as $image)
-                <a
-                    href="{{ asset('storage/' . $image->image_path) }}"
-                    target="_blank"
-                    class="product-showcase-image"
+     @if($displayImage)
+            <div class="seller-main-image">
+                <img
+                    src="{{ $displayImage }}"
+                    alt="{{ $pad->name }}"
+                    loading="lazy"
                 >
-                    <img
-                        src="{{ asset('storage/' . $image->image_path) }}"
-                        alt="{{ $pad->name }}"
-                        loading="lazy"
-                    >
-                </a>
-            @endforeach
-        </div>
-
-    @else
-        <div class="empty">
-            <div style="font-size:50px;">🛞</div>
-            هنوز عکسی برای این لنت بارگذاری نشده است.
-        </div>
-    @endif
+             
+            </div>
+        @endif
 </div>
 
 <div class="card">
@@ -95,7 +95,11 @@
 
     </div>
 </div>
-
+<div class="card">
+    @include('brake-bank.partials.seller-offers', [
+        'pad' => $pad
+    ])
+</div>
 <div class="card">
     <h2>خودروهای سازگار</h2>
 

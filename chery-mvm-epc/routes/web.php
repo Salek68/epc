@@ -131,3 +131,24 @@ Route::get('/buy/seller-product/{product}', [
     SellerProductController::class,
     'visit'
 ])->name('seller.products.visit');
+
+
+
+use App\Http\Controllers\BrakeBankController;
+
+Route::prefix('brake-bank')
+    ->name('brake-bank.')
+    ->group(function () {
+
+        // صفحه جست‌وجوی خودرو
+        Route::get('/', [BrakeBankController::class, 'index'])
+            ->name('index');
+
+        // نمایش لنت‌های جلو و عقب یک خودرو
+        Route::get('/vehicle/{vehicle}', [BrakeBankController::class, 'vehicle'])
+            ->name('vehicle');
+
+        // جزئیات یک لنت
+        Route::get('/pad/{pad}', [BrakeBankController::class, 'show'])
+            ->name('pad.show');
+    });

@@ -133,25 +133,37 @@ class CatalogController extends Controller
             ? $selectedVehicles[0]
             : '';
 
-        $parts = Part::query()
-            ->when($q !== '', function ($query) use ($q) {
-                $query->where(function ($sub) use ($q) {
-                    $sub->where('technical_code', 'like', "%{$q}%")
-                        ->orWhere('logistics_code', 'like', "%{$q}%")
-                        ->orWhere('name_fa', 'like', "%{$q}%");
-                });
-            })
-            ->when(!empty($selectedVehicles), function ($query) use ($selectedVehicles) {
-                $query->whereHas('vehicleModels', function ($sub) use ($selectedVehicles) {
-                    $sub->whereIn('vehicle_models.name', $selectedVehicles);
-                });
-            })
-            ->when($category !== '', function ($query) use ($category) {
-                $query->where('category', $category);
-            })
-            ->orderBy('name_fa')
-            ->paginate(25)
-            ->withQueryString();
+   // یکسان‌سازی حروف فارسی و عربی در عبارت جست‌وجو
+$normalizedQ = str_replace(
+    ['ي', 'ك', 'ة', 'ۀ'],
+    ['ی', 'ک', 'ه', 'ه'],
+    $q
+);
+
+$normalizedQ = preg_replace('/\s+/u', ' ', trim($normalizedQ));
+
+$parts = Part::query()
+    ->when($normalizedQ !== '', function ($query) use ($normalizedQ) {
+        $query->where(function ($sub) use ($normalizedQ) {
+            $sub->where('technical_code', 'like', "%{$normalizedQ}%")
+                ->orWhere('logistics_code', 'like', "%{$normalizedQ}%")
+                ->orWhereRaw(
+                    "REPLACE(REPLACE(name_fa, 'ي', 'ی'), 'ك', 'ک') LIKE ?",
+                    ["%{$normalizedQ}%"]
+                );
+        });
+    })
+    ->when(!empty($selectedVehicles), function ($query) use ($selectedVehicles) {
+        $query->whereHas('vehicleModels', function ($sub) use ($selectedVehicles) {
+            $sub->whereIn('vehicle_models.name', $selectedVehicles);
+        });
+    })
+    ->when($category !== '', function ($query) use ($category) {
+        $query->where('category', $category);
+    })
+    ->orderBy('name_fa')
+    ->paginate(25)
+    ->withQueryString();
 
         $categories = DB::table('parts')
             ->whereNotNull('category')
@@ -208,19 +220,38 @@ public function category(Request $request)
         });
 
     // جست‌وجوی عبارت‌های چندکلمه‌ای
-    if ($q !== '') {
-        $words = preg_split('/\s+/u', $q, -1, PREG_SPLIT_NO_EMPTY);
+if ($q !== '') {
 
-        $partsQuery->where(function ($sub) use ($words) {
-            foreach ($words as $word) {
-                $sub->where(function ($inner) use ($word) {
-                    $inner->where('technical_code', 'like', "%{$word}%")
-                        ->orWhere('logistics_code', 'like', "%{$word}%")
-                        ->orWhere('name_fa', 'like', "%{$word}%");
-                });
-            }
-        });
-    }
+    // یکسان‌سازی حروف عربی و فارسی
+    $normalizedQ = str_replace(
+        ['ي', 'ك', 'ة', 'ۀ'],
+        ['ی', 'ک', 'ه', 'ه'],
+        $q
+    );
+
+    // یکسان‌سازی فاصله‌ها
+    $normalizedQ = preg_replace('/\s+/u', ' ', trim($normalizedQ));
+
+    // جدا کردن کلمات جست‌وجو
+    $words = preg_split('/\s+/u', $normalizedQ, -1, PREG_SPLIT_NO_EMPTY);
+
+    $partsQuery->where(function ($sub) use ($words) {
+
+        foreach ($words as $word) {
+
+            $sub->where(function ($inner) use ($word) {
+
+                $inner->where('technical_code', 'like', "%{$word}%")
+                    ->orWhere('logistics_code', 'like', "%{$word}%")
+                    ->orWhereRaw(
+                        "REPLACE(REPLACE(name_fa, 'ي', 'ی'), 'ك', 'ک') LIKE ?",
+                        ["%{$word}%"]
+                    );
+            });
+
+        }
+    });
+}
 
     // دریافت قطعات همراه با فروشندگان فعال و تأییدشده
   $parts = $partsQuery

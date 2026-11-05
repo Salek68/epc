@@ -1285,8 +1285,10 @@ document.addEventListener('DOMContentLoaded', function () {
         </form>
     </section>
 
+
 {{-- فهرست قطعات --}}
 <section class="epc-card">
+
     <div class="epc-heading">
         <div>
             <h2>
@@ -1316,6 +1318,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     <div class="epc-table-wrap">
         <table class="epc-table">
+
             <thead>
                 <tr>
                     <th>تصویر</th>
@@ -1330,25 +1333,49 @@ document.addEventListener('DOMContentLoaded', function () {
             </thead>
 
             <tbody>
+
                 @forelse ($parts as $part)
+
                     <tr>
-                        {{-- تصویر محصول --}}
+
+                        {{-- تصویر قطعه --}}
                         <td>
-                            @if (!empty($part->img_src))
-                                <a href="{{ $part->img_src }}"
-                                   target="_blank"
-                                   rel="noopener noreferrer">
-                                    <img
-                                        src="{{ $part->img_src }}"
-                                        alt="{{ $part->name_fa }}"
-                                        class="epc-product-image"
-                                        loading="lazy">
-                                </a>
-                            @else
-                                <div class="epc-no-image">
-                                    📷
-                                </div>
-                            @endif
+                                @if ($part->activeSellerProducts->isNotEmpty() &&
+     !empty($part->activeSellerProducts->first()->image_url))
+
+    {{-- تصویر ثبت‌شده توسط فروشنده --}}
+    <a href="{{ $part->activeSellerProducts->first()->image_url }}"
+       target="_blank"
+       rel="noopener noreferrer">
+
+        <img
+            src="{{ $part->activeSellerProducts->first()->image_url }}"
+            alt="{{ $part->name_fa }}"
+            class="epc-product-image"
+            loading="lazy">
+    </a>
+
+@elseif (!empty($part->img_src))
+
+    {{-- تصویر اصلی EPC --}}
+    <a href="{{ $part->img_src }}"
+       target="_blank"
+       rel="noopener noreferrer">
+
+        <img
+            src="{{ $part->img_src }}"
+            alt="{{ $part->name_fa }}"
+            class="epc-product-image"
+            loading="lazy">
+    </a>
+
+@else
+
+    <div class="epc-no-image">
+        📷
+    </div>
+
+@endif
                         </td>
 
                         {{-- کد فنی --}}
@@ -1377,7 +1404,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             {{ $part->car_model_raw ?: 'ثبت نشده' }}
                         </td>
 
-                        {{-- قیمت --}}
+                        {{-- قیمت شرکت --}}
                         <td class="epc-price">
                             {{ $part->price !== null
                                 ? number_format((float) $part->price)
@@ -1393,9 +1420,24 @@ document.addEventListener('DOMContentLoaded', function () {
                             </a>
                         </td>
 
-                        {{-- لینک خرید --}}
+                        {{-- خرید از فروشندگان یا لینک اصلی --}}
                         <td>
-                            @if (!empty($part->p_link))
+@if ($part->activeSellerProducts->isNotEmpty())
+
+                                <a
+                                    class="epc-buy-link epc-seller-buy-link"
+                                    href="{{ route('catalog.show', $part->id) }}#seller-offers">
+
+                                    🛒 خرید از فروشندگان
+
+                                    <span class="epc-seller-count">
+                                        {{ $part->activeSellerProducts->count() }}
+                                    </span>
+
+                                </a>
+
+                            @elseif (!empty($part->p_link))
+
                                 <a
                                     class="epc-buy-link"
                                     href="{{ $part->p_link }}"
@@ -1403,35 +1445,81 @@ document.addEventListener('DOMContentLoaded', function () {
                                     rel="noopener noreferrer">
                                     🛒 خرید محصول
                                 </a>
+
                             @else
+
                                 <span class="epc-no-buy">
-                                    ناموجود
+                                    لینک خرید ندارد
                                 </span>
+
                             @endif
+
                         </td>
+
                     </tr>
 
                 @empty
+
                     <tr>
                         <td colspan="8" class="epc-empty">
+
                             <div style="font-size:30px;margin-bottom:8px">
                                 ⌕
                             </div>
 
                             قطعه‌ای با این مشخصات پیدا نشد.
+
                             <br>
+
                             فیلترها را تغییر بده و دوباره امتحان کن.
+
                         </td>
                     </tr>
+
                 @endforelse
+
             </tbody>
+
         </table>
     </div>
 
+    {{-- صفحه‌بندی --}}
     <div class="epc-pagination">
         {{ $parts->withQueryString()->links() }}
     </div>
+
 </section>
+
+
+<style>
+.epc-seller-buy-link {
+    background: #087f83 !important;
+    color: #fff !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    white-space: nowrap;
+}
+
+.epc-seller-buy-link:hover {
+    background: #09a6a0 !important;
+    color: #fff !important;
+}
+
+.epc-seller-count {
+    background: rgba(255,255,255,.18);
+    border-radius: 20px;
+    padding: 2px 7px;
+    font-size: 11px;
+}
+
+.epc-no-buy {
+    color: #8799a9;
+    font-size: 12px;
+    white-space: nowrap;
+}
+</style>
 
 </div>
 

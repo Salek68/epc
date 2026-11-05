@@ -18,4 +18,20 @@ class Part extends Model
             'vehicle_model_id'
         );
     }
+ public function activeSellerProducts()
+{
+    return $this->hasMany(SellerProduct::class, 'part_id')
+        ->where('is_active', true)
+        ->whereHas('store', function ($query) {
+            $query->where('status', 'approved');
+        });
+}
+
+public function store()
+{
+    return $this->belongsTo(
+        \App\Models\SellerStore::class,
+        'seller_store_id'
+    );
+}
 }

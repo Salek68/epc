@@ -532,7 +532,7 @@
         }
 
 
-        
+
 /* کوچک‌سازی آیکون‌ها */
 svg,
 .icon,
@@ -579,10 +579,20 @@ display: none  !important;
                 <small>سامانه جست‌وجو و مدیریت اطلاعات قطعات</small>
             </a>
 
-            <nav class="nav">
-                <a href="{{ route('catalog.index') }}">صفحه اصلی</a>
-                <a href="{{ route('catalog.category') }}">دسته‌بندی قطعات</a>
-            </nav>
+         <nav class="nav">
+    <a href="{{ route('catalog.index') }}">
+        صفحه اصلی
+    </a>
+
+    <a href="{{ route('catalog.category') }}">
+        دسته‌بندی قطعات
+    </a>
+
+    <a href="{{ route('brake-bank.index') }}">
+        <span style="margin-left:5px;">◉</span>
+        بانک لنت
+    </a>
+</nav>
         </div>
     </header>
 

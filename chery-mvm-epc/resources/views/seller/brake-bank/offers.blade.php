@@ -62,12 +62,12 @@
     }
 
     .offer-table td {
-        color: #dce7f5;
+        color: #000000;
         font-size: 13px;
     }
 
     .offer-table a {
-        color: #55e0d5;
+        color: #000000;
         text-decoration: none;
     }
 

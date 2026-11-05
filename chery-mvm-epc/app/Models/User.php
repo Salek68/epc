@@ -37,6 +37,17 @@ public function sellerStore()
 {
     return $this->hasOne(SellerStore::class);
 }
+
+public function subscriptions()
+{
+    return $this->hasMany(Subscription::class);
+}
+
+public function subscriptionTransactions()
+{
+    return $this->hasMany(SubscriptionTransaction::class);
+}
+
     /**
      * Get the attributes that should be cast.
      *

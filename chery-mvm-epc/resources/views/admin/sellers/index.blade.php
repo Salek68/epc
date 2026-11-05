@@ -1,51 +1,82 @@
 
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>مدیریت فروشندگان</title>
-</head>
-<body style="font-family:Tahoma;padding:30px;background:#f4f5f7">
+@extends('layouts.app')
 
-<h2>مدیریت درخواست‌های فروشندگی</h2>
+@section('title', 'مدیریت فروشندگان')
+
+@section('content')
+
+<div class="page-heading">
+    <h1>مدیریت درخواست‌های فروشندگی</h1>
+    <p class="muted">مشاهده و بررسی درخواست‌های ثبت‌شده فروشندگان</p>
+</div>
 
 @if(session('success'))
-    <p style="color:green">{{ session('success') }}</p>
+    <div class="card" style="color:#166534;background:#dcfce7">
+        {{ session('success') }}
+    </div>
 @endif
 
-<table width="100%" border="1" cellpadding="12" cellspacing="0">
-    <thead>
-        <tr>
-            <th>فروشگاه</th>
-            <th>صاحب فروشگاه</th>
-            <th>شماره تماس</th>
-            <th>وضعیت</th>
-            <th>جزئیات</th>
-        </tr>
-    </thead>
+<div class="card">
+    <h2>فهرست فروشندگان</h2>
 
-    <tbody>
-        @forelse($sellers as $seller)
-            <tr>
-                <td>{{ $seller->store_name }}</td>
-                <td>{{ $seller->owner_name }}</td>
-                <td>{{ $seller->phone }}</td>
-                <td>{{ $seller->status }}</td>
-                <td>
-                    <a href="{{ route('admin.sellers.show', $seller->id) }}">
-                        مشاهده
-                    </a>
-                </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="5">هنوز درخواستی ثبت نشده است.</td>
-            </tr>
-        @endforelse
-    </tbody>
-</table>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>فروشگاه</th>
+                    <th>صاحب فروشگاه</th>
+                    <th>شماره تماس</th>
+                    <th>وضعیت</th>
+                    <th>جزئیات</th>
+                </tr>
+            </thead>
 
-{{ $sellers->links() }}
+            <tbody>
+                @forelse($sellers as $seller)
+                    <tr>
+                        <td><strong>{{ $seller->store_name }}</strong></td>
+                        <td>{{ $seller->owner_name }}</td>
+                        <td>{{ $seller->phone }}</td>
 
-</body>
-</html>
+                        <td>
+                            @if($seller->status === 'pending')
+                                <span class="badge" style="background:#fef3c7;color:#92400e">
+                                    در انتظار بررسی
+                                </span>
+                            @elseif($seller->status === 'approved')
+                                <span class="badge" style="background:#dcfce7;color:#166534">
+                                    تأیید شده
+                                </span>
+                            @elseif($seller->status === 'rejected')
+                                <span class="badge" style="background:#fee2e2;color:#991b1b">
+                                    رد شده
+                                </span>
+                            @else
+                                <span class="badge">{{ $seller->status }}</span>
+                            @endif
+                        </td>
+
+                        <td>
+                            <a class="btn"
+                               href="{{ route('admin.sellers.show', $seller->id) }}">
+                                مشاهده جزئیات
+                            </a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="empty">
+                            هنوز درخواستی ثبت نشده است.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {{ $sellers->links() }}
+    </div>
+</div>
+
+@endsection

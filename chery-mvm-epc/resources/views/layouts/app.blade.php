@@ -579,20 +579,53 @@ display: none  !important;
                 <small>سامانه جست‌وجو و مدیریت اطلاعات قطعات</small>
             </a>
 
-         <nav class="nav">
-    <a href="{{ route('catalog.index') }}">
-        صفحه اصلی
-    </a>
+<nav class="nav">
 
-    <a href="{{ route('catalog.category') }}">
-        دسته‌بندی قطعات
-    </a>
+    @auth
 
-    <a href="{{ route('brake-bank.index') }}">
-        <span style="margin-left:5px;">◉</span>
-        بانک لنت
-    </a>
+        {{-- لینک‌های مشترک کاربران و فروشندگان --}}
+        <a href="{{ route('catalog.index') }}">صفحه اصلی</a>
+
+        <a href="{{ route('catalog.category') }}">دسته‌بندی قطعات</a>
+
+        <a href="{{ route('brake-bank.index') }}">◉ بانک لنت</a>
+
+        <a href="{{ route('subscriptions.index') }}">خرید اشتراک</a>
+
+        <a href="{{ route('subscriptions.my') }}">اشتراک من</a>
+
+
+        {{-- امکانات اختصاصی فروشنده --}}
+        @if(!auth()->user()->is_admin && auth()->user()->sellerStore?->status === 'approved')
+
+            <a href="{{ route('seller.products.index') }}">
+                پنل فروشگاه
+            </a>
+
+        @endif
+
+
+        {{-- امکانات اختصاصی مدیر --}}
+        @if(auth()->user()->is_admin == 1)
+
+            <a href="{{ route('admin.dashboard') }}">
+                پنل مدیریت
+            </a>
+
+            <a href="{{ route('admin.sellers.index') }}">
+                مدیریت فروشندگان
+            </a>
+
+            <a href="{{ route('admin.subscription-transactions.index') }}">
+                مدیریت اشتراک‌ها
+            </a>
+
+        @endif
+
+    @endauth
+
 </nav>
+
         </div>
     </header>
 

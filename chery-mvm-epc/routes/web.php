@@ -1,36 +1,20 @@
 
 <?php
 
-use App\Http\Controllers\Admin\SellerManagementController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CatalogController;
-use App\Http\Controllers\Seller\SellerAuthController;
-use App\Http\Controllers\Seller\SellerProductController;
 use Illuminate\Support\Facades\Route;
 
-// ==========================================
-// EPC - کاتالوگ قطعات
-// ==========================================
-// ==========================================
-// EPC - کاتالوگ قطعات (فقط کاربران لاگین‌شده)
-// ==========================================
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\BrakeBankController;
+use App\Http\Controllers\SubscriptionController;
 
-Route::middleware('auth')->group(function () {
+use App\Http\Controllers\Admin\SellerManagementController;
+use App\Http\Controllers\Admin\SubscriptionTransactionController;
+use App\Http\Controllers\Admin\DashboardController;
 
-    Route::get('/', [CatalogController::class, 'index'])
-        ->name('catalog.index');
-
-    Route::get('/catalog/category', [CatalogController::class, 'category'])
-        ->name('catalog.category');
-
-    Route::get('/catalog/part/{id}', [CatalogController::class, 'show'])
-        ->whereNumber('id')
-        ->name('catalog.show');
-
-    Route::get('/epc/tiggo-7-pro', [CatalogController::class, 'explorer'])
-        ->name('catalog.explorer');
-
-});
+use App\Http\Controllers\Seller\SellerAuthController;
+use App\Http\Controllers\Seller\SellerProductController;
+use App\Http\Controllers\Seller\BrakeBankSellerController;
 
 
 // ==========================================
@@ -59,7 +43,59 @@ Route::post('/logout', [AuthController::class, 'logout'])
 
 
 // ==========================================
-// پنل فروشنده
+// خرید و تمدید اشتراک
+// بدون نیاز به اشتراک فعال
+// ==========================================
+
+Route::middleware('auth')
+    ->prefix('subscriptions')
+    ->name('subscriptions.')
+    ->controller(SubscriptionController::class)
+    ->group(function () {
+
+        Route::get('/', 'index')->name('index');
+
+        Route::get('/my', 'my')->name('my');
+
+        Route::post('/buy', 'store')->name('store');
+
+        Route::get('/payment/{id}', 'payment')
+            ->whereNumber('id')
+            ->name('payment');
+
+        Route::post('/payment/{id}/receipt', 'uploadReceipt')
+            ->whereNumber('id')
+            ->name('receipt');
+
+    });
+
+
+// ==========================================
+// کاتالوگ EPC
+// اشتراک کاربر یا فروشنده
+// ==========================================
+
+Route::middleware(['auth', 'subscription:user'])->group(function () {
+
+    Route::get('/', [CatalogController::class, 'index'])
+        ->name('catalog.index');
+
+    Route::get('/catalog/category', [CatalogController::class, 'category'])
+        ->name('catalog.category');
+
+    Route::get('/catalog/part/{id}', [CatalogController::class, 'show'])
+        ->whereNumber('id')
+        ->name('catalog.show');
+
+    Route::get('/epc/tiggo-7-pro', [CatalogController::class, 'explorer'])
+        ->name('catalog.explorer');
+
+});
+
+
+// ==========================================
+// ثبت نام و وضعیت فروشنده
+// بدون نیاز به اشتراک
 // ==========================================
 
 Route::middleware('auth')
@@ -67,24 +103,101 @@ Route::middleware('auth')
     ->name('seller.')
     ->group(function () {
 
-        // ثبت‌نام فروشنده
         Route::get('/register', [SellerAuthController::class, 'create'])
             ->name('register');
 
         Route::post('/register', [SellerAuthController::class, 'store'])
             ->name('register.store');
 
-        // وضعیت تأیید فروشندگی
         Route::get('/status', [SellerAuthController::class, 'status'])
             ->name('status');
-
-        // محصولات فروشنده
 
     });
 
 
 // ==========================================
-// مدیریت فروشندگان توسط ادمین
+// امکانات بانک لنت فروشنده
+// فقط اشتراک فعال فروشنده
+// ==========================================
+
+Route::middleware(['auth', 'subscription:seller'])
+    ->prefix('seller')
+    ->name('seller.')
+    ->group(function () {
+
+        Route::get('/brake-bank', [BrakeBankSellerController::class, 'index'])
+            ->name('brake-bank.index');
+
+        Route::post('/brake-bank/{brakePad}', [BrakeBankSellerController::class, 'store'])
+            ->name('brake-bank.store');
+
+        Route::get('/brake-bank/offers', [BrakeBankSellerController::class, 'offers'])
+            ->name('brake-bank.offers');
+
+    });
+
+
+// ==========================================
+// محصولات فروشنده
+// فقط اشتراک فعال فروشنده
+// ==========================================
+
+Route::middleware(['auth', 'subscription:seller'])
+    ->prefix('seller/products')
+    ->name('seller.products.')
+    ->controller(SellerProductController::class)
+    ->group(function () {
+
+        Route::get('/catalog', 'catalog')->name('catalog');
+
+        Route::get('/', 'index')->name('index');
+
+        Route::get('/create', 'create')->name('create');
+
+        Route::post('/', 'store')->name('store');
+
+        Route::get('/{product}/edit', 'edit')->name('edit');
+
+        Route::put('/{product}', 'update')->name('update');
+
+        Route::delete('/{product}', 'destroy')->name('destroy');
+
+    });
+
+
+// ==========================================
+// لینک خرید محصولات فروشندگان
+// عمومی
+// ==========================================
+
+Route::get('/buy/seller-product/{product}', [
+    SellerProductController::class,
+    'visit'
+])->name('seller.products.visit');
+
+
+// ==========================================
+// بانک لنت عمومی
+// ==========================================
+
+Route::prefix('brake-bank')
+    ->name('brake-bank.')
+    ->group(function () {
+
+        Route::get('/', [BrakeBankController::class, 'index'])
+            ->name('index');
+
+        Route::get('/vehicle/{vehicle}', [BrakeBankController::class, 'vehicle'])
+            ->name('vehicle');
+
+        Route::get('/pad/{pad}', [BrakeBankController::class, 'show'])
+            ->name('pad.show');
+
+    });
+
+
+// ==========================================
+// پنل مدیریت
 // ==========================================
 
 Route::middleware(['auth', 'admin'])
@@ -92,6 +205,10 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
 
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->name('dashboard');
+
+        // مدیریت فروشندگان
         Route::get('/sellers', [SellerManagementController::class, 'index'])
             ->name('sellers.index');
 
@@ -106,73 +223,17 @@ Route::middleware(['auth', 'admin'])
         Route::post('/sellers/{id}/reject', [SellerManagementController::class, 'reject'])
             ->whereNumber('id')
             ->name('sellers.reject');
-    });
 
+        // مدیریت اشتراک‌ها
+        Route::get('/subscription-transactions', [SubscriptionTransactionController::class, 'index'])
+            ->name('subscription-transactions.index');
 
+        Route::post('/subscription-transactions/{id}/approve', [SubscriptionTransactionController::class, 'approve'])
+            ->whereNumber('id')
+            ->name('subscription-transactions.approve');
 
-
-    // پنل محصولات فروشنده
-Route::middleware('auth')
-    ->prefix('seller/products')
-    ->name('seller.products.')
-    ->controller(SellerProductController::class)
-    ->group(function () {
-        Route::get('/catalog', 'catalog')->name('catalog');
-        Route::get('/', 'index')->name('index');
-        Route::get('/create', 'create')->name('create');
-        Route::post('/', 'store')->name('store');
-        Route::get('/{product}/edit', 'edit')->name('edit');
-        Route::put('/{product}', 'update')->name('update');
-        Route::delete('/{product}', 'destroy')->name('destroy');
-    });
-
-// لینک خرید مشتری و ثبت کلیک
-Route::get('/buy/seller-product/{product}', [
-    SellerProductController::class,
-    'visit'
-])->name('seller.products.visit');
-
-
-
-use App\Http\Controllers\BrakeBankController;
-
-Route::prefix('brake-bank')
-    ->name('brake-bank.')
-    ->group(function () {
-
-        // صفحه جست‌وجوی خودرو
-        Route::get('/', [BrakeBankController::class, 'index'])
-            ->name('index');
-
-        // نمایش لنت‌های جلو و عقب یک خودرو
-        Route::get('/vehicle/{vehicle}', [BrakeBankController::class, 'vehicle'])
-            ->name('vehicle');
-
-        // جزئیات یک لنت
-        Route::get('/pad/{pad}', [BrakeBankController::class, 'show'])
-            ->name('pad.show');
-    });
-
-    use App\Http\Controllers\Seller\BrakeBankSellerController;
-
-Route::prefix('seller')
-    ->name('seller.')
-    ->middleware('auth')
-    ->group(function () {
-
-        Route::get('/brake-bank', [
-            BrakeBankSellerController::class,
-            'index'
-        ])->name('brake-bank.index');
-
-        Route::post('/brake-bank/{brakePad}', [
-            BrakeBankSellerController::class,
-            'store'
-        ])->name('brake-bank.store');
-
-        Route::get('/brake-bank/offers', [
-            BrakeBankSellerController::class,
-            'offers'
-        ])->name('brake-bank.offers');
+        Route::post('/subscription-transactions/{id}/reject', [SubscriptionTransactionController::class, 'reject'])
+            ->whereNumber('id')
+            ->name('subscription-transactions.reject');
 
     });

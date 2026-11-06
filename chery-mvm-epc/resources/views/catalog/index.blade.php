@@ -450,8 +450,12 @@ document.addEventListener('DOMContentLoaded', function () {
 if (!selected) {
     status.textContent = 'این قطعه هنوز به جست‌وجوی کاتالوگ متصل نشده است.\n' +
         JSON.stringify(info, null, 2);
+console.log('Instance ID:', info.instanceID);
+console.log('Mappings:', viewer.mappings);
+console.log('Selected mapping:', viewer.mappings[String(info.instanceID)]);
 
-    console.log('Part Info:', info);
+console.log('Viewer:', viewer);
+console.log('Viewer keys:', Object.keys(viewer));
     return;
 }
 

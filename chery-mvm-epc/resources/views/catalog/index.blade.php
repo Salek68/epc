@@ -374,34 +374,67 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    const viewers = [
-        {
-            iframeId: 'chery-3d-viewer',
-            uid: '3026bd87ca3945d6829d24c86ce695f0',
-            mappings: {
-                '642': {
-                    name: 'میل سوپاپ',
-                    category: '',
-                    subcategory: '',
-                    vehicle: '',
-                    q: 'میل سوپاپ'
-                }
-            }
-        },
-        {
-            iframeId: 'chery-3d-viewer1',
-            uid: 'c4bd63d950cb49a59b3807e82ebd4178',
-            mappings: {
-                '819': {
-                    name: 'درب عقب سمت راست',
-                    category: '',
-                    subcategory: '',
-                    vehicle: '',
-                    q: 'درب عقب سمت راست'
-                }
-            }
+    
+const viewers = [
+    {
+        iframeId: 'chery-3d-viewer',
+        uid: '3026bd87ca3945d6829d24c86ce695f0',
+        mappings: {
+            '642': { name: 'میل سوپاپ', category: '', subcategory: '', vehicle: '', q: 'میل سوپاپ' },
+            '512': { name: 'درب قالپاق', category: '', subcategory: '', vehicle: '', q: 'درب قالپاق' },
+            '528': { name: 'درب قالپاق', category: '', subcategory: '', vehicle: '', q: 'درب قالپاق' },
+            '558': { name: 'فلایویل', category: '', subcategory: '', vehicle: '', q: 'فلایویل' },
+            '596': { name: 'منیفولد دود', category: '', subcategory: '', vehicle: '', q: 'منیفولد دود' },
+            '1114': { name: 'سر سیلندر', category: '', subcategory: '', vehicle: '', q: 'سر سیلندر' },
+            '980': { name: 'سرسلندر', category: '', subcategory: '', vehicle: '', q: 'سرسلندر' },
+            '887': { name: 'سیلندر', category: '', subcategory: '', vehicle: '', q: 'سیلندر' },
+            '209': { name: 'پیستون', category: '', subcategory: '', vehicle: '', q: 'پیستون' },
+            '273': { name: 'پیستون', category: '', subcategory: '', vehicle: '', q: 'پیستون' },
+            '353': { name: 'پیستون', category: '', subcategory: '', vehicle: '', q: 'پیستون' },
+            '107': { name: 'پیستون', category: '', subcategory: '', vehicle: '', q: 'پیستون' },
+            '241': { name: 'پیستون', category: '', subcategory: '', vehicle: '', q: 'پیستون' },
+            '337': { name: 'پیستون', category: '', subcategory: '', vehicle: '', q: 'پیستون' },
+            '385': { name: 'پیستون', category: '', subcategory: '', vehicle: '', q: 'پیستون' },
+            '161': { name: 'پیستون', category: '', subcategory: '', vehicle: '', q: 'پیستون' },
+            '612': { name: 'میل لنگ', category: '', subcategory: '', vehicle: '', q: 'میل لنگ' },
+            '622': { name: 'میل لنگ', category: '', subcategory: '', vehicle: '', q: 'میل لنگ' },
+            '177': { name: 'شاتون', category: '', subcategory: '', vehicle: '', q: 'شاتون' },
+            '126': { name: 'شاتون', category: '', subcategory: '', vehicle: '', q: 'شاتون' },
+            '401': { name: 'شاتون', category: '', subcategory: '', vehicle: '', q: 'شاتون' },
+            '369': { name: 'شاتون', category: '', subcategory: '', vehicle: '', q: 'شاتون' },
+            '321': { name: 'شاتون', category: '', subcategory: '', vehicle: '', q: 'شاتون' },
+            '289': { name: 'شاتون', category: '', subcategory: '', vehicle: '', q: 'شاتون' },
+            '257': { name: 'شاتون', category: '', subcategory: '', vehicle: '', q: 'شاتون' },
+            '225': { name: 'شاتون', category: '', subcategory: '', vehicle: '', q: 'شاتون' },
+            '544': { name: 'تسمه تایم', category: '', subcategory: '', vehicle: '', q: 'تسمه تایم' },
+            '762': { name: 'کارتل', category: '', subcategory: '', vehicle: '', q: 'کارتل' }
         }
-    ];
+    },
+    {
+        iframeId: 'chery-3d-viewer1',
+        uid: 'c4bd63d950cb49a59b3807e82ebd4178',
+        mappings: {
+            '819': { name: 'درب عقب سمت راست', category: '', subcategory: '', vehicle: '', q: 'درب عقب سمت راست' },
+            '1024': { name: 'آینه بغل', category: '', subcategory: '', vehicle: '', q: 'آینه بغل' },
+            '1009': { name: 'آینه بغل', category: '', subcategory: '', vehicle: '', q: 'آینه بغل' },
+            '657': { name: 'کاپوت', category: '', subcategory: '', vehicle: '', q: 'کاپوت' },
+            '3000': { name: 'چراغ جلو', category: '', subcategory: '', vehicle: '', q: 'چراغ جلو' },
+            '1342': { name: 'چراغ جلو', category: '', subcategory: '', vehicle: '', q: 'چراغ جلو' },
+            '2391': { name: 'دیلایت', category: '', subcategory: '', vehicle: '', q: 'دیلایت' },
+            '3265': { name: 'دیلایت', category: '', subcategory: '', vehicle: '', q: 'دیلایت' },
+            '714': { name: 'سپر ', category: '', subcategory: '', vehicle: '', q: 'سپر ' },
+            '2130': { name: 'رینگ چرخ', category: '', subcategory: '', vehicle: '', q: 'رینگ چرخ' },
+            '2015': { name: 'رینگ چرخ', category: '', subcategory: '', vehicle: '', q: 'رینگ چرخ' },
+            '1889': { name: 'رینگ چرخ', category: '', subcategory: '', vehicle: '', q: 'رینگ چرخ' },
+            '2292': { name: 'رینگ چرخ', category: '', subcategory: '', vehicle: '', q: 'رینگ چرخ' },
+            '2483': { name: 'درب عقب چپ', category: '', subcategory: '', vehicle: '', q: 'درب عقب چپ' },
+            '2498': { name: 'درب جلو چپ', category: '', subcategory: '', vehicle: '', q: 'درب جلو چپ' },
+            '1240': { name: 'خطر گلگیر', category: '', subcategory: '', vehicle: '', q: 'خطر گلگیر' },
+            '2898': { name: 'خطر گلگیر', category: '', subcategory: '', vehicle: '', q: 'خطر گلگیر' },
+            '476': { name: 'خطر صندوق', category: '', subcategory: '', vehicle: '', q: 'خطر صندوق' }
+        }
+    }
+];
 
     let readyCount = 0;
 
@@ -448,14 +481,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const selected = viewer.mappings[String(info.instanceID)];
 
 if (!selected) {
-    status.textContent = 'این قطعه هنوز به جست‌وجوی کاتالوگ متصل نشده است.\n' +
-        JSON.stringify(info, null, 2);
-console.log('Instance ID:', info.instanceID);
-console.log('Mappings:', viewer.mappings);
-console.log('Selected mapping:', viewer.mappings[String(info.instanceID)]);
-
-console.log('Viewer:', viewer);
-console.log('Viewer keys:', Object.keys(viewer));
+    status.textContent = 'این قطعه هنوز به جست‌وجوی کاتالوگ متصل نشده است.\n' +info.instanceID;
     return;
 }
 

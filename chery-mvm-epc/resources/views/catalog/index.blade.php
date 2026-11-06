@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const selected = viewer.mappings[String(info.instanceID)];
 
                     if (!selected) {
-                        status.textContent = 'این قطعه هنوز به جست‌وجوی کاتالوگ متصل نشده است.';
+                        status.textContent = 'این قطعه هنوز به جست‌وجوی کاتالوگ متصل نشده است.' + info;
                         return;
                     }
 

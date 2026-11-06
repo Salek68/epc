@@ -447,11 +447,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     const selected = viewer.mappings[String(info.instanceID)];
 
-                    if (!selected) {
-                        status.textContent = 'این قطعه هنوز به جست‌وجوی کاتالوگ متصل نشده است.' + info;
-                        console.log(info);
-                        return;
-                    }
+if (!selected) {
+    status.textContent = 'این قطعه هنوز به جست‌وجوی کاتالوگ متصل نشده است.\n' +
+        JSON.stringify(info, null, 2);
+
+    console.log('Part Info:', info);
+    return;
+}
 
                     status.textContent = 'در حال جست‌وجوی ' + selected.name + '...';
 

@@ -449,6 +449,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     if (!selected) {
                         status.textContent = 'این قطعه هنوز به جست‌وجوی کاتالوگ متصل نشده است.' + info;
+                        console.log(info);
                         return;
                     }
 

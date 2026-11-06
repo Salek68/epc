@@ -34,7 +34,7 @@
         }
         .error { color: red; }
     </style>
-</head>
+<link rel="stylesheet" href="{{ asset('css/partcar-system.css') }}?v=2.0.0"></head>
 <body>
 
 <div class="container">

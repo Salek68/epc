@@ -1,186 +1,1039 @@
 
 @extends('layouts.app')
 
-@section('title', ($part->name_fa ?? 'جزئیات قطعه') . ' | کاتالوگ قطعات')
+@section('title', ($part->name_fa ?? 'جزئیات قطعه') . ' | PartCar')
 
 @section('content')
 
-<div class="epc-page">
+@php
+    $firstSellerProduct = $part->activeSellerProducts->first();
 
-    {{-- دکمه بازگشت --}}
-    <div class="page-actions">
-        <a href="{{ url()->previous() }}" class="epc-btn epc-btn-light">
-            ← بازگشت
-        </a>
+    $sellerOfferCount = isset($sellerOffers)
+        ? $sellerOffers->count()
+        : 0;
 
-        <a href="{{ route('catalog.index') }}" class="epc-btn epc-btn-primary">
-            صفحه اصلی کاتالوگ
-        </a>
-    </div>
+    $technicalFields = [
+        ['label' => 'کد فنی', 'value' => $part->technical_code],
+        ['label' => 'کد لجستیکی', 'value' => $part->logistics_code],
+        ['label' => 'دسته‌بندی', 'value' => $part->category],
+        ['label' => 'زیردسته', 'value' => $part->subcategory],
+        ['label' => 'مدل خودرو', 'value' => $part->car_model_raw],
+        ['label' => 'قیمت شرکت', 'value' => $part->price !== null ? number_format((float) $part->price) . ' تومان' : null],
+        ['label' => 'قیمت با مالیات', 'value' => $part->price_tax !== null ? number_format((float) $part->price_tax) . ' تومان' : null],
+    ];
+@endphp
 
-    {{-- عنوان قطعه --}}
-    <section class="epc-hero">
-        <div>
-            <span class="epc-label">اطلاعات قطعه</span>
+<style>
+.pc-part-page {
+    --pc-navy: #0B1730;
+    --pc-blue: #087BFA;
+    --pc-blue-light: #EFF6FF;
+    --pc-bg: #F4F7FB;
+    --pc-border: #E5EAF1;
+    --pc-muted: #748196;
+    --pc-text: #344256;
 
-            <h1>{{ $part->name_fa }}</h1>
+    direction: rtl;
+    color: var(--pc-text);
+    padding-bottom: 35px;
+    font-family: inherit;
+}
 
-            <p>
-                کد فنی:
-                <strong>{{ $part->technical_code ?: 'ثبت نشده' }}</strong>
-            </p>
+.pc-part-page *,
+.pc-part-page *::before,
+.pc-part-page *::after {
+    box-sizing: border-box;
+}
+
+.pc-part-page a {
+    text-decoration: none;
+}
+
+/* Navigation */
+
+.pc-part-page .pc-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 19px;
+}
+
+.pc-part-page .pc-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    color: #8b98a9;
+    font-size: 11px;
+}
+
+.pc-part-page .pc-breadcrumb a {
+    color: var(--pc-blue);
+}
+
+.pc-part-page .pc-navigation {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pc-part-page .pc-nav-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 38px;
+    padding: 8px 13px;
+    border: 1px solid var(--pc-border);
+    border-radius: 9px;
+    background: #fff;
+    color: #536176;
+    font-size: 11px;
+    font-weight: 800;
+    transition: .2s;
+}
+
+.pc-part-page .pc-nav-button:hover {
+    border-color: #bfdbfe;
+    background: #f8fbff;
+    color: var(--pc-blue);
+}
+
+.pc-part-page .pc-nav-button.primary {
+    border-color: var(--pc-blue);
+    background: var(--pc-blue);
+    color: #fff;
+}
+
+.pc-part-page .pc-nav-button.primary:hover {
+    background: #0665d1;
+    color: #fff;
+}
+
+/* Main showcase */
+
+.pc-part-page .pc-product-hero {
+    display: grid;
+    grid-template-columns: minmax(260px, 390px) minmax(0, 1fr);
+    gap: 27px;
+    padding: 24px;
+    margin-bottom: 19px;
+    border: 1px solid var(--pc-border);
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 4px 18px rgba(15,35,65,.035);
+}
+
+.pc-part-page .pc-image-area {
+    min-width: 0;
+}
+
+.pc-part-page .pc-main-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    overflow: hidden;
+    padding: 15px;
+    border: 1px solid #edf0f5;
+    border-radius: 13px;
+    background: #fff;
+}
+
+.pc-part-page .pc-main-image img {
+    display: block;
+    width: 100%;
+    height: 300px;
+    object-fit: contain;
+    transition: transform .25s ease;
+}
+
+.pc-part-page .pc-main-image img:hover {
+    transform: scale(1.035);
+}
+
+.pc-part-page .pc-image-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    min-height: 270px;
+    border: 1px dashed #dce3ec;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #9aa7b7;
+    font-size: 12px;
+}
+
+.pc-part-page .pc-image-empty span {
+    font-size: 38px;
+}
+
+.pc-part-page .pc-image-caption {
+    margin-top: 9px;
+    color: #9aa5b4;
+    font-size: 10px;
+    text-align: center;
+}
+
+.pc-part-page .pc-product-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.pc-part-page .pc-product-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    width: fit-content;
+    padding: 7px 10px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #1765c1;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.pc-part-page .pc-product-title {
+    margin: 15px 0 8px;
+    color: var(--pc-navy);
+    font-size: clamp(21px, 2.4vw, 29px);
+    font-weight: 900;
+    line-height: 1.8;
+}
+
+.pc-part-page .pc-product-subtitle {
+    margin: 0 0 20px;
+    color: var(--pc-muted);
+    font-size: 12px;
+    line-height: 2;
+}
+
+.pc-part-page .pc-code-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 13px 15px;
+    border: 1px solid #dbeafe;
+    border-radius: 11px;
+    background: #f8fbff;
+}
+
+.pc-part-page .pc-code-box small {
+    display: block;
+    margin-bottom: 5px;
+    color: #8190a4;
+    font-size: 10px;
+}
+
+.pc-part-page .pc-code-box strong {
+    display: block;
+    direction: ltr;
+    unicode-bidi: plaintext;
+    color: #1765c1;
+    font-family: Consolas, monospace;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.pc-part-page .pc-code-copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 33px;
+    padding: 7px 11px;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    background: #fff;
+    color: #1765c1;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.pc-part-page .pc-code-copy:hover {
+    background: #eff6ff;
+}
+
+.pc-part-page .pc-quick-info {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.pc-part-page .pc-quick-item {
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid var(--pc-border);
+    border-radius: 10px;
+    background: #fff;
+}
+
+.pc-part-page .pc-quick-item small {
+    display: block;
+    margin-bottom: 7px;
+    color: #8b98a9;
+    font-size: 10px;
+}
+
+.pc-part-page .pc-quick-item strong {
+    display: block;
+    color: var(--pc-navy);
+    font-size: 12px;
+    font-weight: 900;
+    overflow-wrap: anywhere;
+}
+
+.pc-part-page .pc-quick-item.price strong {
+    color: #168052;
+}
+
+.pc-part-page .pc-source-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: fit-content;
+    min-height: 40px;
+    margin-top: 16px;
+    padding: 9px 14px;
+    border: 1px solid var(--pc-border);
+    border-radius: 9px;
+    background: #f8fafc;
+    color: #526176;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.pc-part-page .pc-source-link:hover {
+    border-color: #bfdbfe;
+    background: #eff6ff;
+    color: var(--pc-blue);
+}
+
+/* Section common */
+
+.pc-part-page .pc-section {
+    margin-bottom: 19px;
+    padding: 21px;
+    border: 1px solid var(--pc-border);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(15,35,65,.03);
+}
+
+.pc-part-page .pc-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 19px;
+}
+
+.pc-part-page .pc-section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+}
+
+.pc-part-page .pc-section-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: #eff6ff;
+    color: var(--pc-blue);
+    font-size: 18px;
+}
+
+.pc-part-page .pc-section-heading h2 {
+    margin: 0;
+    color: var(--pc-navy);
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.8;
+}
+
+.pc-part-page .pc-section-heading p {
+    margin: 4px 0 0;
+    color: var(--pc-muted);
+    font-size: 10px;
+    line-height: 1.9;
+}
+
+.pc-part-page .pc-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 35px;
+    min-height: 29px;
+    padding: 5px 10px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #1765c1;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+/* Seller offers */
+
+.pc-part-page .pc-seller-section {
+    border-color: #cfe9e6;
+}
+
+.pc-part-page .pc-seller-section .pc-section-icon {
+    background: #e8f7f4;
+    color: #087f83;
+}
+
+.pc-part-page .pc-seller-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 14px;
+}
+
+.pc-part-page .pc-seller-card {
+    display: grid;
+    grid-template-columns: 125px minmax(0,1fr);
+    gap: 15px;
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid #e5edf0;
+    border-radius: 13px;
+    background: #fff;
+    transition: .2s ease;
+}
+
+.pc-part-page .pc-seller-card:hover {
+    border-color: #9dd9d3;
+    box-shadow: 0 6px 20px rgba(8,127,131,.07);
+    transform: translateY(-2px);
+}
+
+.pc-part-page .pc-seller-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 150px;
+    overflow: hidden;
+    border: 1px solid #edf0f5;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.pc-part-page .pc-seller-image img {
+    width: 100%;
+    height: 150px;
+    padding: 7px;
+    object-fit: contain;
+}
+
+.pc-part-page .pc-seller-image-empty {
+    color: #9aa5b4;
+    font-size: 10px;
+    text-align: center;
+    line-height: 2;
+}
+
+.pc-part-page .pc-seller-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.pc-part-page .pc-seller-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pc-part-page .pc-seller-title {
+    margin: 0;
+    color: var(--pc-navy);
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.8;
+}
+
+.pc-part-page .pc-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 7px;
+    border-radius: 7px;
+    background: #eaf8f0;
+    color: #168052;
+    font-size: 9px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.pc-part-page .pc-seller-product {
+    margin: 9px 0;
+    color: #77859a;
+    font-size: 10px;
+    line-height: 1.9;
+}
+
+.pc-part-page .pc-seller-price {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: auto;
+    margin-bottom: 11px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.pc-part-page .pc-seller-price span {
+    color: #8794a5;
+    font-size: 9px;
+}
+
+.pc-part-page .pc-seller-price strong {
+    color: #9a6b0b;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.pc-part-page .pc-seller-buy {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 35px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #087f83;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    transition: .2s;
+}
+
+.pc-part-page .pc-seller-buy:hover {
+    background: #06686b;
+    color: #fff;
+}
+
+.pc-part-page .pc-empty-state {
+    padding: 35px 15px;
+    border: 1px dashed #dce3ec;
+    border-radius: 12px;
+    background: #f8fafc;
+    text-align: center;
+}
+
+.pc-part-page .pc-empty-state-icon {
+    margin-bottom: 10px;
+    color: #9aa7b7;
+    font-size: 30px;
+}
+
+.pc-part-page .pc-empty-state strong {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--pc-navy);
+    font-size: 13px;
+}
+
+.pc-part-page .pc-empty-state p {
+    margin: 0;
+    color: var(--pc-muted);
+    font-size: 11px;
+    line-height: 2;
+}
+
+/* Technical specifications */
+
+.pc-part-page .pc-spec-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 11px;
+}
+
+.pc-part-page .pc-spec-item {
+    min-width: 0;
+    padding: 13px 14px;
+    border: 1px solid var(--pc-border);
+    border-radius: 10px;
+    background: #fbfcfe;
+}
+
+.pc-part-page .pc-spec-item small {
+    display: block;
+    margin-bottom: 7px;
+    color: #8491a3;
+    font-size: 10px;
+}
+
+.pc-part-page .pc-spec-item strong {
+    display: block;
+    color: #29384d;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.9;
+    overflow-wrap: anywhere;
+}
+
+.pc-part-page .pc-spec-item.code strong {
+    direction: ltr;
+    unicode-bidi: plaintext;
+    font-family: Consolas, monospace;
+    color: #1765c1;
+}
+
+/* Compatibility */
+
+.pc-part-page .pc-vehicle-list,
+.pc-part-page .pc-replacement-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.pc-part-page .pc-vehicle-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 13px;
+    border: 1px solid #dbeafe;
+    border-radius: 9px;
+    background: #f4f8ff;
+    color: #315b91;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.pc-part-page .pc-vehicle-chip::before {
+    content: "🚘";
+    font-size: 13px;
+}
+
+.pc-part-page .pc-replacement-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 13px;
+    border: 1px solid #dce3ec;
+    border-radius: 9px;
+    background: #f8fafc;
+    color: #344256;
+    direction: ltr;
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* Related parts */
+
+.pc-part-page .pc-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--pc-border);
+    border-radius: 11px;
+}
+
+.pc-part-page .pc-related-table {
+    width: 100%;
+    min-width: 650px;
+    border-collapse: collapse;
+}
+
+.pc-part-page .pc-related-table th {
+    padding: 13px;
+    background: #f8fafc;
+    color: #748196;
+    font-size: 10px;
+    font-weight: 900;
+    text-align: right;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--pc-border);
+}
+
+.pc-part-page .pc-related-table td {
+    padding: 13px;
+    color: #465469;
+    font-size: 11px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.pc-part-page .pc-related-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.pc-part-page .pc-related-name {
+    color: var(--pc-navy);
+    font-weight: 900;
+}
+
+.pc-part-page .pc-related-code {
+    direction: ltr;
+    unicode-bidi: plaintext;
+    color: #1765c1;
+    font-family: Consolas, monospace;
+    font-weight: 800;
+}
+
+.pc-part-page .pc-related-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #1765c1;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.pc-part-page .pc-related-link:hover {
+    background: #dbeafe;
+    color: #0756b5;
+}
+
+/* Responsive */
+
+@media(max-width: 1050px) {
+    .pc-part-page .pc-seller-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-part-page .pc-spec-grid {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+}
+
+@media(max-width: 700px) {
+    .pc-part-page .pc-topbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pc-part-page .pc-product-hero {
+        grid-template-columns: 1fr;
+        padding: 15px;
+        gap: 19px;
+    }
+
+    .pc-part-page .pc-main-image {
+        min-height: 220px;
+    }
+
+    .pc-part-page .pc-main-image img {
+        height: 220px;
+    }
+
+    .pc-part-page .pc-section {
+        padding: 15px;
+    }
+
+    .pc-part-page .pc-spec-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-part-page .pc-seller-card {
+        grid-template-columns: 95px minmax(0,1fr);
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .pc-part-page .pc-seller-image,
+    .pc-part-page .pc-seller-image img {
+        min-height: 120px;
+        height: 120px;
+    }
+
+    .pc-part-page .pc-seller-title-row {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .pc-part-page .pc-quick-info {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media(max-width: 380px) {
+    .pc-part-page .pc-seller-card {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-part-page .pc-seller-image,
+    .pc-part-page .pc-seller-image img {
+        height: 170px;
+    }
+
+    .pc-part-page .pc-navigation {
+        width: 100%;
+    }
+
+    .pc-part-page .pc-nav-button {
+        flex: 1;
+    }
+}
+</style>
+
+<div class="pc-part-page">
+
+    {{-- Navigation --}}
+    <div class="pc-topbar">
+
+        <div class="pc-breadcrumb">
+            <a href="{{ url('/') }}">داشبورد</a>
+            <span>←</span>
+            <a href="{{ route('catalog.index') }}">کاتالوگ قطعات</a>
+            <span>←</span>
+            <strong>{{ $part->name_fa }}</strong>
         </div>
-    </section>
 
-    {{-- تصویر و اطلاعات اولیه قطعه --}}
-    <section class="epc-card">
-        <div class="product-showcase">
+        <div class="pc-navigation">
 
-            <div class="product-image">
-                @if ($part->activeSellerProducts->isNotEmpty() &&
-     !empty($part->activeSellerProducts->first()->image_url))
+            <a href="{{ url()->previous() }}" class="pc-nav-button">
+                ← بازگشت
+            </a>
 
-    {{-- تصویر ثبت‌شده توسط فروشنده --}}
-    <a href="{{ $part->activeSellerProducts->first()->image_url }}"
-       target="_blank"
-       rel="noopener noreferrer">
+            <a href="{{ route('catalog.index') }}" class="pc-nav-button primary">
+                فهرست قطعات
+            </a>
 
-        <img
-            src="{{ $part->activeSellerProducts->first()->image_url }}"
-            alt="{{ $part->name_fa }}"
-            class="epc-product-image"
-            loading="lazy">
-    </a>
+        </div>
 
-@elseif (!empty($part->img_src))
-
-    {{-- تصویر اصلی EPC --}}
-    <a href="{{ $part->img_src }}"
-       target="_blank"
-       rel="noopener noreferrer">
-
-        <img
-            src="{{ $part->img_src }}"
-            alt="{{ $part->name_fa }}"
-            class="epc-product-image"
-            loading="lazy">
-    </a>
-
-@else
-
-    <div class="epc-no-image">
-        📷
     </div>
 
-@endif
+    {{-- Product Overview --}}
+    <section class="pc-product-hero">
+
+        <div class="pc-image-area">
+
+            <div class="pc-main-image">
+
+                @if ($firstSellerProduct && !empty($firstSellerProduct->image_url))
+
+                    <a
+                        href="{{ $firstSellerProduct->image_url }}"
+                        target="_blank"
+                        rel="noopener noreferrer">
+
+                        <img
+                            src="{{ $firstSellerProduct->image_url }}"
+                            alt="{{ $part->name_fa }}"
+                            loading="lazy">
+                    </a>
+
+                @elseif (!empty($part->img_src))
+
+                    <a
+                        href="{{ $part->img_src }}"
+                        target="_blank"
+                        rel="noopener noreferrer">
+
+                        <img
+                            src="{{ $part->img_src }}"
+                            alt="{{ $part->name_fa }}"
+                            loading="lazy">
+                    </a>
+
+                @else
+
+                    <div class="pc-image-empty">
+                        <span>▧</span>
+                        تصویر این قطعه ثبت نشده است
+                    </div>
+
+                @endif
+
             </div>
 
-            <div class="product-summary">
-                <h2>{{ $part->name_fa }}</h2>
+            <div class="pc-image-caption">
+                تصویر قطعه از اطلاعات EPC یا فروشندگان ثبت‌شده
+            </div>
 
-                <div class="summary-item">
-                    <span>کد فنی</span>
-                    <strong>{{ $part->technical_code ?: '-' }}</strong>
-                </div>
+        </div>
 
-                <div class="summary-item">
-                    <span>کد لجستیکی</span>
-                    <strong>{{ $part->logistics_code ?: '-' }}</strong>
-                </div>
+        <div class="pc-product-info">
 
-                <div class="summary-item">
-                    <span>قیمت شرکت</span>
-                    <strong>
-                        {{ $part->price ? number_format($part->price) . ' تومان' : 'ثبت نشده' }}
+            <span class="pc-product-label">
+                <span>●</span>
+                شناسنامه قطعه در PartCar
+            </span>
+
+            <h1 class="pc-product-title">
+                {{ $part->name_fa ?: 'قطعه بدون نام' }}
+            </h1>
+
+            <p class="pc-product-subtitle">
+                اطلاعات فنی، خودروهای سازگار و فروشگاه‌های عرضه‌کننده این قطعه
+                را در یک صفحه مشاهده کن.
+            </p>
+
+            <div class="pc-code-box">
+
+                <div>
+                    <small>کد فنی قطعه</small>
+
+                    <strong id="part-technical-code">
+                        {{ $part->technical_code ?: 'ثبت نشده' }}
                     </strong>
                 </div>
 
-                @if(!empty($part->p_link))
-                    <a href="{{ $part->p_link }}"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="epc-btn epc-btn-primary">
-                        مشاهده منبع قطعه
-                    </a>
+                @if(!empty($part->technical_code))
+                    <button
+                        type="button"
+                        class="pc-code-copy"
+                        onclick="copyPartCode()">
+                        کپی کد
+                    </button>
                 @endif
+
             </div>
+
+            <div class="pc-quick-info">
+
+                <div class="pc-quick-item">
+                    <small>کد لجستیکی</small>
+                    <strong>
+                        {{ $part->logistics_code ?: 'ثبت نشده' }}
+                    </strong>
+                </div>
+
+                <div class="pc-quick-item price">
+                    <small>قیمت شرکت</small>
+                    <strong>
+                        {{ $part->price !== null
+                            ? number_format((float) $part->price) . ' تومان'
+                            : 'ثبت نشده' }}
+                    </strong>
+                </div>
+
+                <div class="pc-quick-item">
+                    <small>گروه قطعه</small>
+                    <strong>{{ $part->category ?: 'نامشخص' }}</strong>
+                </div>
+
+                <div class="pc-quick-item">
+                    <small>خودرو</small>
+                    <strong>{{ $part->car_model_raw ?: 'ثبت نشده' }}</strong>
+                </div>
+
+            </div>
+
+            @if(!empty($part->p_link))
+                <a
+                    href="{{ $part->p_link }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="pc-source-link">
+                    مشاهده منبع اصلی قطعه
+                    ↗
+                </a>
+            @endif
 
         </div>
+
     </section>
 
+    {{-- Seller Offers --}}
+    <section class="pc-section pc-seller-section" id="seller-offers">
 
-    {{-- پیشنهادهای فروشندگان --}}
-    <section class="epc-card seller-offers-section">
+        <div class="pc-section-header">
 
-        <div class="section-heading">
-            <div>
-                <span class="epc-label">خرید قطعه</span>
-                <h2>فروشگاه‌های عرضه‌کننده این قطعه</h2>
-                <p>
-                    محصولات ثبت‌شده توسط فروشندگان تأییدشده
-                </p>
+            <div class="pc-section-heading">
+                <div class="pc-section-icon">🛒</div>
+
+                <div>
+                    <h2>فروشگاه‌های عرضه‌کننده این قطعه</h2>
+                    <p>
+                        پیشنهادهای ثبت‌شده توسط فروشندگان تأییدشده PartCar
+                    </p>
+                </div>
             </div>
 
-            <span class="seller-count">
-                {{ isset($sellerOffers) ? $sellerOffers->count() : 0 }}
-                فروشگاه
+            <span class="pc-count-badge">
+                {{ number_format($sellerOfferCount) }} فروشگاه
             </span>
+
         </div>
 
         @if(isset($sellerOffers) && $sellerOffers->count() > 0)
 
-            <div class="seller-offers-grid">
+            <div class="pc-seller-grid">
 
                 @foreach($sellerOffers as $offer)
 
-                    <article class="seller-offer-card">
+                    <article class="pc-seller-card">
 
-                        <div class="seller-offer-image">
+                        <div class="pc-seller-image">
 
                             @if(!empty($offer->image_url))
+
                                 <img
                                     src="{{ $offer->image_url }}"
                                     alt="{{ $part->name_fa }}"
-                                    loading="lazy"
-                                >
+                                    loading="lazy">
+
                             @else
-                                <div class="seller-image-placeholder">
-                                    <span>تصویر موجود نیست</span>
+
+                                <div class="pc-seller-image-empty">
+                                    ▧
+                                    <br>
+                                    تصویر موجود نیست
                                 </div>
+
                             @endif
 
                         </div>
 
-                        <div class="seller-offer-info">
+                        <div class="pc-seller-content">
 
-                            <div class="seller-title-row">
-                                <h3>
+                            <div class="pc-seller-title-row">
+
+                                <h3 class="pc-seller-title">
                                     {{ $offer->store->store_name ?? 'فروشگاه' }}
                                 </h3>
 
-                                <span class="seller-verified">
-                                    <span>✓</span>
-                                    تأییدشده
+                                <span class="pc-verified">
+                                    ✓ تأییدشده
                                 </span>
+
                             </div>
 
-                            <p class="seller-product-name">
+                            <p class="pc-seller-product">
                                 {{ $part->name_fa }}
                             </p>
 
-                            <div class="seller-price-info">
+                            <div class="pc-seller-price">
                                 <span>قیمت و موجودی</span>
                                 <strong>استعلام از فروشگاه</strong>
                             </div>
 
                             <a
                                 href="{{ route('seller.products.visit', $offer->id) }}"
-                                class="seller-buy-button"
+                                class="pc-seller-buy"
                                 target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                مشاهده و خرید
-                                <span>←</span>
+                                rel="noopener noreferrer">
+
+                                مشاهده محصول و خرید
+                                ←
+
                             </a>
 
                         </div>
@@ -193,168 +1046,188 @@
 
         @else
 
-            <div class="seller-offers-empty">
-                <div class="empty-icon">🛒</div>
-                <h3>هنوز فروشگاهی این قطعه را ثبت نکرده است</h3>
+            <div class="pc-empty-state">
+
+                <div class="pc-empty-state-icon">🛒</div>
+
+                <strong>هنوز فروشگاهی این قطعه را ثبت نکرده است</strong>
+
                 <p>
                     در حال حاضر پیشنهاد خریدی برای این قطعه وجود ندارد.
                 </p>
+
             </div>
 
         @endif
 
     </section>
 
+    {{-- Technical Specifications --}}
+    <section class="pc-section">
 
-    {{-- مشخصات فنی --}}
-    <section class="epc-card">
+        <div class="pc-section-header">
 
-        <div class="section-heading">
-            <div>
-                <span class="epc-label">Technical Information</span>
-                <h2>مشخصات فنی قطعه</h2>
+            <div class="pc-section-heading">
+                <div class="pc-section-icon">⚙</div>
+
+                <div>
+                    <h2>مشخصات فنی قطعه</h2>
+                    <p>اطلاعات ثبت‌شده در بانک اطلاعات EPC</p>
+                </div>
             </div>
+
         </div>
 
-        <div class="technical-grid">
+        <div class="pc-spec-grid">
 
-            <div class="technical-item">
-                <span>نام قطعه</span>
-                <strong>{{ $part->name_fa ?: '-' }}</strong>
-            </div>
+            @foreach($technicalFields as $field)
 
-            <div class="technical-item">
-                <span>کد فنی</span>
-                <strong>{{ $part->technical_code ?: '-' }}</strong>
-            </div>
+                <div class="pc-spec-item {{ in_array($field['label'], ['کد فنی', 'کد لجستیکی']) ? 'code' : '' }}">
 
-            <div class="technical-item">
-                <span>کد لجستیکی</span>
-                <strong>{{ $part->logistics_code ?: '-' }}</strong>
-            </div>
+                    <small>{{ $field['label'] }}</small>
 
-            <div class="technical-item">
-                <span>دسته‌بندی</span>
-                <strong>{{ $part->category ?: '-' }}</strong>
-            </div>
+                    <strong>
+                        {{ $field['value'] ?: 'ثبت نشده' }}
+                    </strong>
 
-            <div class="technical-item">
-                <span>زیردسته</span>
-                <strong>{{ $part->subcategory ?: '-' }}</strong>
-            </div>
+                </div>
 
-            <div class="technical-item">
-                <span>قیمت شرکت</span>
-                <strong>
-                    {{ $part->price ? number_format($part->price) . ' تومان' : '-' }}
-                </strong>
-            </div>
-
-            <div class="technical-item">
-                <span>قیمت با مالیات</span>
-                <strong>
-                    {{ $part->price_tax ? number_format($part->price_tax) . ' تومان' : '-' }}
-                </strong>
-            </div>
-
-            <div class="technical-item">
-                <span>مدل خودرو</span>
-                <strong>{{ $part->car_model_raw ?: '-' }}</strong>
-            </div>
+            @endforeach
 
         </div>
 
     </section>
 
+    {{-- Compatible Vehicles --}}
+    <section class="pc-section">
 
-    {{-- خودروهای سازگار --}}
-    <section class="epc-card">
+        <div class="pc-section-header">
 
-        <div class="section-heading">
-            <div>
-                <span class="epc-label">Compatibility</span>
-                <h2>خودروهای سازگار با این قطعه</h2>
+            <div class="pc-section-heading">
+                <div class="pc-section-icon">🚘</div>
+
+                <div>
+                    <h2>خودروهای سازگار با این قطعه</h2>
+                    <p>مدل‌هایی که این قطعه برای آن‌ها ثبت شده است</p>
+                </div>
             </div>
+
+            @if(isset($vehicleModels) && $vehicleModels->count() > 0)
+                <span class="pc-count-badge">
+                    {{ number_format($vehicleModels->count()) }} خودرو
+                </span>
+            @endif
+
         </div>
 
         @if(isset($vehicleModels) && $vehicleModels->count() > 0)
 
-            <div class="vehicle-models">
+            <div class="pc-vehicle-list">
 
                 @foreach($vehicleModels as $vehicle)
-                    <span class="vehicle-chip">
+
+                    <span class="pc-vehicle-chip">
                         {{ $vehicle->name }}
                     </span>
+
                 @endforeach
 
             </div>
 
         @else
 
-            <p class="empty-message">
-                اطلاعات خودروهای سازگار ثبت نشده است.
-            </p>
+            <div class="pc-empty-state">
+                <div class="pc-empty-state-icon">🚘</div>
+                <strong>اطلاعات سازگاری ثبت نشده است</strong>
+                <p>خودروهای سازگار با این قطعه در بانک اطلاعاتی موجود نیستند.</p>
+            </div>
 
         @endif
 
     </section>
 
+    {{-- Replacement Codes --}}
+    <section class="pc-section">
 
-    {{-- کدهای جایگزین --}}
-    <section class="epc-card">
+        <div class="pc-section-header">
 
-        <div class="section-heading">
-            <div>
-                <span class="epc-label">Replacement Codes</span>
-                <h2>کدهای جایگزین قطعه</h2>
+            <div class="pc-section-heading">
+                <div class="pc-section-icon">⇄</div>
+
+                <div>
+                    <h2>کدهای جایگزین قطعه</h2>
+                    <p>کدهای فنی جایگزین یا معادل ثبت‌شده برای این قطعه</p>
+                </div>
             </div>
+
+            @if(isset($replacementCodes) && count($replacementCodes) > 0)
+                <span class="pc-count-badge">
+                    {{ number_format(count($replacementCodes)) }} کد
+                </span>
+            @endif
+
         </div>
 
         @if(isset($replacementCodes) && count($replacementCodes) > 0)
 
-            <div class="replacement-codes">
+            <div class="pc-replacement-list">
 
                 @foreach($replacementCodes as $code)
-                    <span class="code-chip">
+
+                    <span class="pc-replacement-chip">
                         {{ $code }}
                     </span>
+
                 @endforeach
 
             </div>
 
         @else
 
-            <p class="empty-message">
-                کد جایگزینی برای این قطعه ثبت نشده است.
-            </p>
+            <div class="pc-empty-state">
+                <div class="pc-empty-state-icon">⇄</div>
+                <strong>کد جایگزینی ثبت نشده است</strong>
+                <p>برای این قطعه کد فنی جایگزین در دسترس نیست.</p>
+            </div>
 
         @endif
 
     </section>
 
+    {{-- Replacement Parts --}}
+    <section class="pc-section">
 
-    {{-- قطعات دارای کد جایگزین --}}
-    <section class="epc-card">
+        <div class="pc-section-header">
 
-        <div class="section-heading">
-            <div>
-                <span class="epc-label">Related Parts</span>
-                <h2>قطعات مرتبط با کدهای جایگزین</h2>
+            <div class="pc-section-heading">
+                <div class="pc-section-icon">▤</div>
+
+                <div>
+                    <h2>قطعات مرتبط با کدهای جایگزین</h2>
+                    <p>قطعات دیگری که با کدهای جایگزین مرتبط هستند</p>
+                </div>
             </div>
+
+            @if(isset($replacementParts) && $replacementParts->count() > 0)
+                <span class="pc-count-badge">
+                    {{ number_format($replacementParts->count()) }} قطعه
+                </span>
+            @endif
+
         </div>
 
         @if(isset($replacementParts) && $replacementParts->count() > 0)
 
-            <div class="table-wrapper">
+            <div class="pc-table-wrap">
 
-                <table class="epc-table">
+                <table class="pc-related-table">
 
                     <thead>
                         <tr>
                             <th>نام قطعه</th>
                             <th>کد فنی</th>
                             <th>کد لجستیکی</th>
-                            <th>عملیات</th>
+                            <th>مشاهده</th>
                         </tr>
                     </thead>
 
@@ -363,17 +1236,33 @@
                         @foreach($replacementParts as $replacement)
 
                             <tr>
-                                <td>{{ $replacement->name_fa }}</td>
-                                <td>{{ $replacement->technical_code ?: '-' }}</td>
-                                <td>{{ $replacement->logistics_code ?: '-' }}</td>
+
+                                <td>
+                                    <span class="pc-related-name">
+                                        {{ $replacement->name_fa ?: 'بدون نام' }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="pc-related-code">
+                                        {{ $replacement->technical_code ?: '—' }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="pc-related-code">
+                                        {{ $replacement->logistics_code ?: '—' }}
+                                    </span>
+                                </td>
+
                                 <td>
                                     <a
                                         href="{{ route('catalog.show', $replacement->id) }}"
-                                        class="table-link"
-                                    >
-                                        مشاهده قطعه
+                                        class="pc-related-link">
+                                        مشاهده قطعه ↗
                                     </a>
                                 </td>
+
                             </tr>
 
                         @endforeach
@@ -386,9 +1275,11 @@
 
         @else
 
-            <p class="empty-message">
-                قطعه مرتبطی پیدا نشد.
-            </p>
+            <div class="pc-empty-state">
+                <div class="pc-empty-state-icon">▤</div>
+                <strong>قطعه مرتبطی پیدا نشد</strong>
+                <p>در حال حاضر قطعه دیگری با کدهای جایگزین این محصول ثبت نشده است.</p>
+            </div>
 
         @endif
 
@@ -396,460 +1287,51 @@
 
 </div>
 
-
-<style>
-
-.epc-page {
-    direction: rtl;
-    color: #eaf2ff;
-    max-width: 1250px;
-    margin: 0 auto;
-    padding: 25px 16px 60px;
-}
-
-.epc-page * {
-    box-sizing: border-box;
-}
-
-.page-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.epc-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 18px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 700;
-    transition: .2s;
-}
-
-.epc-btn-primary {
-    background: #08b6d5;
-    color: #04131d;
-}
-
-.epc-btn-primary:hover {
-    background: #35d5ed;
-    color: #04131d;
-}
-
-.epc-btn-light {
-    background: #172c43;
-    color: #dcecff;
-    border: 1px solid #29445f;
-}
-
-.epc-hero {
-    background: linear-gradient(120deg, #102b46, #071827);
-    border: 1px solid #1d405d;
-    border-radius: 18px;
-    padding: 30px;
-    margin-bottom: 20px;
-}
-
-.epc-hero h1 {
-    color: #fff;
-    font-size: 27px;
-    margin: 12px 0;
-}
-
-.epc-hero p {
-    color: #a9c2d8;
-    margin: 0;
-}
-
-.epc-label {
-    color: #12c6e2;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1px;
-}
-
-.epc-card {
-    background: #0b1d30;
-    border: 1px solid #1b3852;
-    border-radius: 17px;
-    padding: 24px;
-    margin-bottom: 20px;
-    overflow: hidden;
-}
-
-.product-showcase {
-    display: grid;
-    grid-template-columns: minmax(220px, 350px) 1fr;
-    gap: 30px;
-    align-items: center;
-}
-
-.product-image {
-    background: #fff;
-    border-radius: 14px;
-    min-height: 250px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 15px;
-}
-
-.product-image img {
-    width: 100%;
-    max-height: 300px;
-    object-fit: contain;
-}
-
-.image-placeholder,
-.seller-image-placeholder {
-    color: #71869a;
-    text-align: center;
-    padding: 30px 10px;
-}
-
-.product-summary h2 {
-    color: #fff;
-    font-size: 22px;
-    margin: 0 0 20px;
-}
-
-.summary-item {
-    display: flex;
-    justify-content: space-between;
-    gap: 15px;
-    padding: 12px 0;
-    border-bottom: 1px solid #1b354c;
-}
-
-.summary-item span,
-.technical-item span {
-    color: #91a9bd;
-    font-size: 13px;
-}
-
-.summary-item strong,
-.technical-item strong {
-    color: #f0f6ff;
-    font-size: 13px;
-    overflow-wrap: anywhere;
-}
-
-.product-summary .epc-btn {
-    margin-top: 20px;
-}
-
-.section-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    margin-bottom: 22px;
-}
-
-.section-heading h2 {
-    color: #fff;
-    font-size: 19px;
-    margin: 7px 0;
-}
-
-.section-heading p {
-    color: #91a9bd;
-    font-size: 12px;
-    margin: 0;
-}
-
-.technical-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-}
-
-.technical-item {
-    background: #10263c;
-    border: 1px solid #1c3a55;
-    border-radius: 11px;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-}
-
-.vehicle-models,
-.replacement-codes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.vehicle-chip,
-.code-chip {
-    background: #102c43;
-    border: 1px solid #1c536e;
-    color: #61d9ed;
-    border-radius: 9px;
-    padding: 9px 13px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.code-chip {
-    direction: ltr;
-    color: #d6eaff;
-}
-
-.empty-message {
-    color: #91a9bd;
-    font-size: 13px;
-    margin: 0;
-}
-
-.table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-}
-
-.epc-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 600px;
-}
-
-.epc-table th,
-.epc-table td {
-    text-align: right;
-    padding: 14px;
-    border-bottom: 1px solid #1b354c;
-    font-size: 13px;
-}
-
-.epc-table th {
-    color: #65d7eb;
-    background: #10263c;
-}
-
-.epc-table td {
-    color: #dce9f7;
-}
-
-.table-link {
-    color: #19c6e1;
-    text-decoration: none;
-    font-weight: 700;
-}
-
-
-/* فروشگاه‌های عرضه‌کننده */
-
-.seller-offers-section {
-    border-color: #17617a;
-    background: linear-gradient(145deg, #0b2033, #0a1b2b);
-}
-
-.seller-count {
-    background: #12364b;
-    color: #42d5ec;
-    border: 1px solid #1c6178;
-    border-radius: 30px;
-    padding: 8px 13px;
-    font-size: 12px;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-.seller-offers-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-}
-
-.seller-offer-card {
-    background: #10263a;
-    border: 1px solid #24465f;
-    border-radius: 14px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: .2s;
-}
-
-.seller-offer-card:hover {
-    border-color: #14bdd9;
-    transform: translateY(-3px);
-}
-
-.seller-offer-image {
-    height: 210px;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.seller-offer-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 12px;
-}
-
-.seller-image-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #e8eef3;
-}
-
-.seller-offer-info {
-    padding: 17px;
-}
-
-.seller-title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.seller-title-row h3 {
-    color: #fff;
-    font-size: 16px;
-    margin: 0;
-}
-
-.seller-verified {
-    color: #47d9b0;
-    font-size: 11px;
-    background: #123a39;
-    border: 1px solid #24665b;
-    border-radius: 20px;
-    padding: 5px 9px;
-}
-
-.seller-product-name {
-    color: #a9bfd2;
-    font-size: 12px;
-    margin: 14px 0;
-}
-
-.seller-price-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    background: #0b1c2c;
-    border-radius: 9px;
-    padding: 12px;
-    margin-bottom: 14px;
-}
-
-.seller-price-info span {
-    color: #8da8bd;
-    font-size: 12px;
-}
-
-.seller-price-info strong {
-    color: #f4d47c;
-    font-size: 12px;
-}
-
-.seller-buy-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    background: #08b6d5;
-    color: #041722;
-    text-decoration: none;
-    font-weight: 800;
-    font-size: 13px;
-    border-radius: 9px;
-    padding: 12px;
-    transition: .2s;
-}
-
-.seller-buy-button:hover {
-    background: #39d9ed;
-    color: #041722;
-}
-
-.seller-offers-empty {
-    text-align: center;
-    padding: 35px 15px;
-    background: #10263a;
-    border: 1px dashed #31536b;
-    border-radius: 12px;
-}
-
-.empty-icon {
-    font-size: 35px;
-    margin-bottom: 12px;
-}
-
-.seller-offers-empty h3 {
-    color: #eaf5ff;
-    font-size: 16px;
-    margin: 0 0 10px;
-}
-
-.seller-offers-empty p {
-    color: #91a9bd;
-    font-size: 13px;
-    margin: 0;
-}
-
-
-/* نمایش در موبایل */
-
-@media (max-width: 768px) {
-
-    .epc-page {
-        padding: 15px 10px 40px;
+<script>
+function copyPartCode() {
+    const codeElement = document.getElementById('part-technical-code');
+
+    if (!codeElement) return;
+
+    const code = codeElement.innerText.trim();
+
+    if (!code || code === 'ثبت نشده') return;
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(code).then(function () {
+            showCopyFeedback();
+        });
+    } else {
+        const input = document.createElement('textarea');
+        input.value = code;
+        input.style.position = 'fixed';
+        input.style.opacity = '0';
+        document.body.appendChild(input);
+        input.select();
+
+        try {
+            document.execCommand('copy');
+            showCopyFeedback();
+        } catch (error) {
+            alert('کپی کد انجام نشد.');
+        }
+
+        input.remove();
     }
-
-    .epc-card {
-        padding: 16px;
-    }
-
-    .epc-hero {
-        padding: 22px;
-    }
-
-    .epc-hero h1 {
-        font-size: 21px;
-    }
-
-    .product-showcase {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .product-image {
-        min-height: 200px;
-    }
-
-    .technical-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .seller-offers-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .section-heading {
-        align-items: flex-start;
-    }
-
 }
 
-</style>
+function showCopyFeedback() {
+    const button = document.querySelector('.pc-code-copy');
+
+    if (!button) return;
+
+    const oldText = button.innerText;
+    button.innerText = '✓ کپی شد';
+
+    setTimeout(function () {
+        button.innerText = oldText;
+    }, 1500);
+}
+</script>
 
 @endsection

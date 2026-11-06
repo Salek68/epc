@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>وضعیت درخواست فروشندگی</title>
-</head>
+<link rel="stylesheet" href="{{ asset('css/partcar-system.css') }}?v=2.0.0"></head>
 <body style="font-family:Tahoma;background:#f4f5f7;padding:40px">
 
 <div style="max-width:600px;margin:auto;background:white;padding:30px;border-radius:12px">

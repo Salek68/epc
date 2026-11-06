@@ -17,6 +17,8 @@ use App\Http\Controllers\Seller\SellerProductController;
 use App\Http\Controllers\Seller\BrakeBankSellerController;
 
 
+
+Route::view('/home', 'landing')->name('landing');
 // ==========================================
 // احراز هویت کاربران
 // ==========================================

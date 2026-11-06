@@ -1,280 +1,528 @@
+
 @extends('layouts.app')
 
-@section('title', 'بانک لنت و فروش لنت')
+@section('title', 'بانک لنت و فروش لنت | PartCar')
 
 @section('content')
 
-<style>
-    .brake-page {
-        direction: rtl;
-        color: #e8eef8;
-        padding: 24px 0;
-    }
+<div class="pc-brake-page" dir="rtl">
 
-    .brake-hero {
-        background: linear-gradient(120deg, #101b30, #19355b, #10434b);
-        border: 1px solid rgba(255,255,255,.08);
-        border-radius: 20px;
-        padding: 28px;
-        margin-bottom: 24px;
-    }
+    <style>
+        .pc-brake-page {
+            --navy: #0B1730;
+            --blue: #087BFA;
+            --text: #17243A;
+            --muted: #718096;
+            --border: #E7ECF3;
+            --surface: #FFFFFF;
+            --background: #F4F7FB;
+            color: var(--text);
+            padding: 10px 0 40px;
+        }
 
-    .brake-hero h1 {
-        margin: 0 0 10px;
-        font-size: 25px;
-        color: #fff;
-    }
+        .pc-brake-page * {
+            box-sizing: border-box;
+        }
 
-    .brake-hero p {
-        margin: 0;
-        color: #c5d4e9;
-    }
+        .pc-brake-page .brake-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
 
-    .brake-actions {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 20px;
-    }
+        .pc-brake-page .brake-heading h1 {
+            margin: 0;
+            font-size: 25px;
+            font-weight: 850;
+            color: var(--navy);
+        }
 
-    .brake-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px 16px;
-        border-radius: 10px;
-        text-decoration: none;
-        border: 0;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 700;
-    }
+        .pc-brake-page .brake-heading p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 2;
+            margin: 9px 0 0;
+            max-width: 650px;
+        }
 
-    .brake-btn-primary {
-        background: #55e0d5;
-        color: #09202a;
-    }
+        .pc-brake-page .brake-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
 
-    .brake-btn-secondary {
-        background: rgba(255,255,255,.1);
-        color: #fff;
-    }
+        .pc-brake-page .brake-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 16px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            text-decoration: none !important;
+            cursor: pointer;
+            transition: .2s ease;
+        }
 
-    .brake-search {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 22px;
-    }
+        .pc-brake-page .brake-btn-primary {
+            background: var(--blue);
+            color: #fff !important;
+        }
 
-    .brake-search input {
-        flex: 1;
-        min-width: 0;
-        padding: 13px 15px;
-        border: 1px solid #293b55;
-        border-radius: 12px;
-        background: #101b2d;
-        color: #fff;
-        outline: none;
-    }
+        .pc-brake-page .brake-btn-primary:hover {
+            background: #0666D1;
+        }
 
-    .brake-search input:focus,
-    .brake-form input:focus,
-    .brake-form select:focus {
-        border-color: #55e0d5;
-    }
+        .pc-brake-page .brake-btn-light {
+            background: #fff;
+            color: var(--navy) !important;
+            border-color: var(--border);
+        }
 
-    .brake-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-        gap: 18px;
-    }
+        .pc-brake-page .brake-btn-light:hover {
+            border-color: #A9CEFA;
+            background: #F8FBFF;
+        }
 
-    .brake-card {
-        background: #101b2d;
-        border: 1px solid #263951;
-        border-radius: 17px;
-        overflow: hidden;
-    }
+        .pc-brake-page .brake-alert {
+            padding: 13px 16px;
+            border-radius: 11px;
+            margin-bottom: 17px;
+            font-size: 13px;
+            line-height: 1.9;
+            background: #EFFAF4;
+            border: 1px solid #C8EBD6;
+            color: #167346;
+        }
 
-    .brake-card-body {
-        padding: 18px;
-    }
+        .pc-brake-page .brake-alert-error {
+            background: #FFF3F2;
+            border-color: #F6D0CC;
+            color: #B42318;
+        }
 
-    .brake-code {
-        color: #55e0d5;
-        font-size: 12px;
-        font-weight: 800;
-        direction: ltr;
-        text-align: right;
-    }
+        .pc-brake-page .brake-search-panel {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 17px;
+            margin-bottom: 23px;
+        }
 
-    .brake-card h3 {
-        color: #fff;
-        font-size: 18px;
-        margin: 10px 0;
-    }
+        .pc-brake-page .search-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 10px;
+        }
 
-    .brake-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 7px;
-        margin: 12px 0;
-    }
+        .pc-brake-page .brake-search {
+            display: flex;
+            gap: 10px;
+        }
 
-    .brake-meta span {
-        background: #192b43;
-        color: #c7d6e9;
-        padding: 6px 9px;
-        border-radius: 8px;
-        font-size: 11px;
-    }
+        .pc-brake-page .brake-search input {
+            flex: 1;
+            min-width: 0;
+            height: 44px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 0 14px;
+            background: #FAFBFD;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+        }
 
-    .brake-price {
-        color: #55e0d5;
-        font-weight: 800;
-        margin: 12px 0;
-    }
+        .pc-brake-page input:focus,
+        .pc-brake-page select:focus {
+            border-color: var(--blue) !important;
+            box-shadow: 0 0 0 3px rgba(8,123,250,.09);
+            outline: none;
+        }
 
-    .brake-divider {
-        border: 0;
-        border-top: 1px solid #293b55;
-        margin: 17px 0;
-    }
+        .pc-brake-page .results-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 14px;
+        }
 
-    .brake-form label {
-        display: block;
-        color: #c9d6e8;
-        font-size: 12px;
-        margin: 12px 0 7px;
-    }
+        .pc-brake-page .results-heading h2 {
+            color: var(--navy);
+            font-size: 16px;
+            font-weight: 850;
+            margin: 0;
+        }
 
-    .brake-form input,
-    .brake-form select {
-        display: block;
-        width: 100%;
-        box-sizing: border-box;
-        padding: 11px;
-        border: 1px solid #293b55;
-        border-radius: 9px;
-        background: #0b1524;
-        color: #fff;
-        outline: none;
-    }
+        .pc-brake-page .results-count {
+            color: var(--muted);
+            font-size: 11px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 6px 11px;
+        }
 
-    .brake-form select[multiple] {
-        min-height: 110px;
-    }
+        .pc-brake-page .brake-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 16px;
+        }
 
-    .brake-help {
-        color: #91a4bd;
-        font-size: 11px;
-        margin-top: 6px;
-    }
-
-    .brake-status {
-        display: inline-block;
-        padding: 6px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 700;
-    }
-
-    .status-pending {
-        color: #ffd68a;
-        background: rgba(245,158,11,.13);
-    }
-
-    .status-approved {
-        color: #72e5a5;
-        background: rgba(34,197,94,.13);
-    }
-
-    .status-rejected,
-    .status-suspended {
-        color: #ff9292;
-        background: rgba(239,68,68,.13);
-    }
-
-    .brake-empty {
-        text-align: center;
-        padding: 45px 15px;
-        background: #101b2d;
-        border: 1px dashed #40516a;
-        border-radius: 15px;
-        color: #aebed2;
-    }
-
-    .brake-alert {
-        padding: 13px 16px;
-        border-radius: 10px;
-        margin-bottom: 18px;
-        background: rgba(34,197,94,.12);
-        color: #8ce5ae;
-    }
-
-    .brake-error {
-        color: #ff9999;
-        font-size: 12px;
-        margin-top: 5px;
-    }
-
-    @media(max-width:600px) {
-        .brake-search {
+        .pc-brake-page .brake-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
             flex-direction: column;
+            min-width: 0;
+            transition: .2s ease;
         }
 
-        .brake-hero {
-            padding: 20px;
+        .pc-brake-page .brake-card:hover {
+            border-color: #B8D6FA;
+            box-shadow: 0 9px 25px rgba(15,45,85,.06);
         }
-    }
-</style>
 
-<div class="brake-page">
+        .pc-brake-page .brake-card-body {
+            padding: 19px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
 
-    <div class="brake-hero">
-        <h1>بانک لنت و فروش لنت</h1>
+        .pc-brake-page .brake-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
 
-        <p>
-            لنت موردنظر خود را از بانک انتخاب کنید و لینک فروش آن را ثبت کنید.
-            درخواست شما پس از بررسی مدیر در بخش فروش نمایش داده خواهد شد.
-        </p>
+        .pc-brake-page .brake-code {
+            color: #087BFA;
+            background: #EEF6FF;
+            border-radius: 7px;
+            padding: 6px 9px;
+            font-size: 11px;
+            font-weight: 850;
+            direction: ltr;
+            text-align: left;
+            overflow-wrap: anywhere;
+        }
 
-        <div class="brake-actions">
+        .pc-brake-page .brake-card h3 {
+            color: var(--navy);
+            font-size: 17px;
+            font-weight: 850;
+            line-height: 1.7;
+            margin: 0 0 12px;
+        }
+
+        .pc-brake-page .brake-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-bottom: 13px;
+        }
+
+        .pc-brake-page .brake-meta span {
+            background: #F3F6FA;
+            border: 1px solid #E9EEF4;
+            color: #52647A;
+            padding: 6px 9px;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .pc-brake-page .brake-price-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 11px 12px;
+            background: #F7FAFE;
+            border: 1px solid #EAF0F7;
+            border-radius: 9px;
+            margin-bottom: 12px;
+        }
+
+        .pc-brake-page .brake-price-label {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .pc-brake-page .brake-price {
+            color: #087BFA;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .pc-brake-page .brake-image-count {
+            color: #718096;
+            font-size: 11px;
+            margin: 0 0 10px;
+        }
+
+        .pc-brake-page .brake-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 30px;
+            padding: 7px 10px;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .pc-brake-page .status-pending {
+            color: #9A6700;
+            background: #FFF5D9;
+        }
+
+        .pc-brake-page .status-approved {
+            color: #167346;
+            background: #EAF8EF;
+        }
+
+        .pc-brake-page .status-rejected,
+        .pc-brake-page .status-suspended {
+            color: #B42318;
+            background: #FFF0EF;
+        }
+
+        .pc-brake-page .brake-status-area {
+            margin: 0 0 12px;
+        }
+
+        .pc-brake-page .brake-divider {
+            border: 0;
+            border-top: 1px solid #EDF0F4;
+            margin: 4px 0 17px;
+        }
+
+        .pc-brake-page .form-heading {
+            color: var(--navy);
+            font-size: 13px;
+            font-weight: 850;
+            margin: 0 0 13px;
+        }
+
+        .pc-brake-page .brake-form {
+            margin-top: auto;
+        }
+
+        .pc-brake-page .brake-form label {
+            display: block;
+            color: #52647A;
+            font-size: 11px;
+            font-weight: 750;
+            margin: 12px 0 7px;
+        }
+
+        .pc-brake-page .brake-form input,
+        .pc-brake-page .brake-form select {
+            display: block;
+            width: 100%;
+            min-width: 0;
+            padding: 11px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: #FAFBFD;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .pc-brake-page .brake-form input {
+            direction: ltr;
+            text-align: left;
+        }
+
+        .pc-brake-page .brake-form select[multiple] {
+            min-height: 115px;
+            direction: rtl;
+            text-align: right;
+            padding: 7px;
+        }
+
+        .pc-brake-page .brake-form select option {
+            padding: 7px;
+        }
+
+        .pc-brake-page .brake-help {
+            color: #8996A8;
+            font-size: 10px;
+            line-height: 1.8;
+            margin-top: 6px;
+        }
+
+        .pc-brake-page .brake-error {
+            color: #C62828;
+            font-size: 11px;
+            margin-top: 6px;
+        }
+
+        .pc-brake-page .brake-submit {
+            width: 100%;
+            margin-top: 17px;
+            min-height: 42px;
+        }
+
+        .pc-brake-page .brake-empty {
+            text-align: center;
+            padding: 55px 20px;
+            background: #fff;
+            border: 1px dashed #CCD6E2;
+            border-radius: 15px;
+        }
+
+        .pc-brake-page .empty-icon {
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            background: #F1F5FA;
+            border-radius: 15px;
+            font-size: 24px;
+        }
+
+        .pc-brake-page .brake-empty h3 {
+            color: var(--navy);
+            font-size: 16px;
+            margin: 0 0 8px;
+        }
+
+        .pc-brake-page .brake-empty p {
+            color: var(--muted);
+            font-size: 12px;
+            margin: 0;
+            line-height: 1.9;
+        }
+
+        .pc-brake-page .brake-pagination {
+            margin-top: 23px;
+        }
+
+        .pc-brake-page .brake-pagination nav {
+            display: flex;
+            justify-content: center;
+        }
+
+        @media(max-width: 600px) {
+            .pc-brake-page .brake-heading h1 {
+                font-size: 21px;
+            }
+
+            .pc-brake-page .brake-header {
+                flex-direction: column;
+            }
+
+            .pc-brake-page .brake-header-actions,
+            .pc-brake-page .brake-header-actions .brake-btn {
+                width: 100%;
+            }
+
+            .pc-brake-page .brake-search {
+                flex-direction: column;
+            }
+
+            .pc-brake-page .brake-search .brake-btn {
+                width: 100%;
+            }
+
+            .pc-brake-page .brake-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    {{-- سربرگ صفحه --}}
+    <div class="brake-header">
+
+        <div class="brake-heading">
+            <h1>بانک لنت و فروش لنت</h1>
+            <p>
+                بانک تخصصی اطلاعات لنت‌های خودرو؛ محصول موردنظر را پیدا کنید،
+                لینک فروشگاه خود را ثبت کنید و پس از تأیید مدیریت در بخش فروش نمایش دهید.
+            </p>
+        </div>
+
+        <div class="brake-header-actions">
             <a href="{{ route('seller.brake-bank.offers') }}"
-               class="brake-btn brake-btn-secondary">
-                درخواست‌های من
+               class="brake-btn brake-btn-light">
+                <span>▤</span>
+                درخواست‌های فروش من
             </a>
         </div>
+
     </div>
 
+    {{-- پیام موفقیت --}}
     @if(session('success'))
         <div class="brake-alert">
+            <strong>✓</strong>
             {{ session('success') }}
         </div>
     @endif
 
+    {{-- خطاهای فرم --}}
     @if($errors->any())
-        <div class="brake-alert" style="background:rgba(239,68,68,.12);color:#ffaaaa">
+        <div class="brake-alert brake-alert-error">
+            <strong>!</strong>
             لطفاً اطلاعات فرم را بررسی کنید.
         </div>
     @endif
 
-    <form action="{{ route('seller.brake-bank.index') }}"
-          method="GET"
-          class="brake-search">
+    {{-- جست‌وجو --}}
+    <div class="brake-search-panel">
 
-        <input
-            type="text"
-            name="q"
-            value="{{ $search }}"
-            placeholder="جست‌وجو با نام لنت یا کد فنی..."
-        >
+        <label class="search-label">
+            جست‌وجو در بانک لنت
+        </label>
 
-        <button type="submit" class="brake-btn brake-btn-primary">
-            جست‌وجو
-        </button>
+        <form action="{{ route('seller.brake-bank.index') }}"
+              method="GET"
+              class="brake-search">
 
-    </form>
+            <input
+                type="text"
+                name="q"
+                value="{{ $search }}"
+                placeholder="نام لنت یا کد فنی را وارد کنید..."
+            >
+
+            <button type="submit" class="brake-btn brake-btn-primary">
+                <span>⌕</span>
+                جست‌وجو
+            </button>
+
+        </form>
+
+    </div>
+
+    {{-- عنوان نتایج --}}
+    <div class="results-heading">
+        <h2>لنت‌های موجود در بانک</h2>
+        <span class="results-count">
+            {{ number_format($pads->total()) }} نتیجه
+        </span>
+    </div>
 
     @if($pads->count())
 
@@ -284,21 +532,41 @@
 
                 @php
                     $offer = $pad->sellerOffers->first();
+
                     $selectedBrandIds = $offer
                         ? $offer->brands->pluck('id')->all()
                         : [];
+
+                    $statusLabels = [
+                        'pending' => 'در انتظار بررسی',
+                        'approved' => 'تأیید شده',
+                        'rejected' => 'رد شده',
+                        'suspended' => 'تعلیق شده',
+                    ];
                 @endphp
 
-                <div class="brake-card">
+                <article class="brake-card">
 
                     <div class="brake-card-body">
 
-                        <div class="brake-code">
-                            {{ $pad->technical_code }}
+                        {{-- اطلاعات اصلی لنت --}}
+                        <div class="brake-card-top">
+
+                            <span class="brake-code">
+                                {{ $pad->technical_code }}
+                            </span>
+
+                            @if($offer)
+                                <span class="brake-status status-{{ $offer->status }}">
+                                    {{ $statusLabels[$offer->status] ?? $offer->status }}
+                                </span>
+                            @endif
+
                         </div>
 
                         <h3>{{ $pad->name }}</h3>
 
+                        {{-- مشخصات --}}
                         <div class="brake-meta">
 
                             @if($pad->position)
@@ -322,39 +590,30 @@
 
                         </div>
 
+                        {{-- قیمت بانک --}}
                         @if($pad->price !== null)
-                            <div class="brake-price">
-                                قیمت بانک:
-                                {{ number_format((float) $pad->price) }}
+                            <div class="brake-price-box">
+                                <span class="brake-price-label">قیمت ثبت‌شده در بانک</span>
+                                <span class="brake-price">
+                                    {{ number_format((float) $pad->price) }}
+                                    <small>تومان</small>
+                                </span>
                             </div>
                         @endif
 
+                        {{-- تصاویر --}}
                         @if($pad->images->isNotEmpty())
-                            <div class="brake-meta">
-                                <span>
-                                    {{ $pad->images->count() }} تصویر در بانک
-                                </span>
-                            </div>
-                        @endif
-
-                        @if($offer)
-                            @php
-                                $statusLabels = [
-                                    'pending' => 'در انتظار بررسی',
-                                    'approved' => 'تأیید شده',
-                                    'rejected' => 'رد شده',
-                                    'suspended' => 'تعلیق شده',
-                                ];
-                            @endphp
-
-                            <div style="margin:12px 0">
-                                <span class="brake-status status-{{ $offer->status }}">
-                                    {{ $statusLabels[$offer->status] ?? $offer->status }}
-                                </span>
+                            <div class="brake-image-count">
+                                ▧ {{ $pad->images->count() }} تصویر ثبت‌شده در بانک
                             </div>
                         @endif
 
                         <hr class="brake-divider">
+
+                        {{-- فرم ثبت یا ویرایش پیشنهاد فروش --}}
+                        <h4 class="form-heading">
+                            {{ $offer ? 'ویرایش اطلاعات فروش شما' : 'ثبت پیشنهاد فروش این لنت' }}
+                        </h4>
 
                         <form
                             action="{{ route('seller.brake-bank.store', $pad->id) }}"
@@ -396,7 +655,9 @@
                             <label>برندهای قابل فروش</label>
 
                             <select name="brand_ids[]" multiple required>
+
                                 @foreach($brands as $brand)
+
                                     <option
                                         value="{{ $brand->id }}"
                                         @selected(
@@ -408,11 +669,13 @@
                                     >
                                         {{ $brand->name }}
                                     </option>
+
                                 @endforeach
+
                             </select>
 
                             <div class="brake-help">
-                                برای انتخاب چند برند، Ctrl و در مک Command را نگه دارید.
+                                برای انتخاب چند برند، کلید Ctrl و در مک Command را نگه دارید.
                             </div>
 
                             @error('brand_ids')
@@ -425,30 +688,40 @@
 
                             <button
                                 type="submit"
-                                class="brake-btn brake-btn-primary"
-                                style="width:100%;margin-top:18px"
+                                class="brake-btn brake-btn-primary brake-submit"
                             >
-                                {{ $offer ? 'به‌روزرسانی درخواست فروش' : 'ثبت درخواست فروش این لنت' }}
+                                {{ $offer ? 'ذخیره تغییرات درخواست' : 'ثبت درخواست فروش' }}
                             </button>
 
                         </form>
 
                     </div>
-                </div>
+
+                </article>
 
             @endforeach
 
         </div>
 
-        <div style="margin-top:25px">
+        {{-- صفحه‌بندی --}}
+        <div class="brake-pagination">
             {{ $pads->links() }}
         </div>
 
     @else
 
+        {{-- نتیجه خالی --}}
         <div class="brake-empty">
-            <h3>لنتی پیدا نشد</h3>
-            <p>عبارت جست‌وجو را تغییر دهید یا کد فنی دیگری وارد کنید.</p>
+
+            <div class="empty-icon">⌕</div>
+
+            <h3>نتیجه‌ای پیدا نشد</h3>
+
+            <p>
+                لنتی با این نام یا کد فنی در بانک پیدا نشد.
+                عبارت جست‌وجو را تغییر دهید و دوباره امتحان کنید.
+            </p>
+
         </div>
 
     @endif

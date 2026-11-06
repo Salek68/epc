@@ -47,7 +47,7 @@
         a { color: #1769aa; }
         .link { text-align: center; margin-top: 20px; }
     </style>
-</head>
+<link rel="stylesheet" href="{{ asset('css/partcar-system.css') }}?v=2.0.0"></head>
 <body>
 
 <div class="box">
